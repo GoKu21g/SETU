@@ -1,0 +1,217 @@
+@import "tailwindcss";
+
+/* Responsive breakpoints — real viewport media queries in rem, so the layout
+   reflows on window resize AND browser zoom (zoom shrinks the CSS viewport).
+   Names are kept from the earlier screen-tier variants so page markup is unchanged. */
+@custom-variant screen-420 (@media (min-width: 26.25rem));
+@custom-variant screen-sm (@media (min-width: 36rem));
+@custom-variant screen-lg (@media (min-width: 56rem));
+@custom-variant screen-xl (@media (min-width: 72rem));
+@custom-variant screen-1366 (@media (min-width: 85.375rem));
+@custom-variant screen-1440 (@media (min-width: 90rem));
+@custom-variant screen-2xl (@media (min-width: 96rem));
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-inter), ui-sans-serif, system-ui, Arial, Helvetica, sans-serif;
+}
+
+/* Root font size — fluid on viewport width. Every rem-based utility (padding, gap,
+   sizing, text, icons) scales off this, so the whole UI scales smoothly with window
+   size and browser zoom instead of jumping between fixed steps. The px term keeps
+   zoom-in slightly enlarging things; the vh term stops short viewports (e.g. a 1080p
+   screen at 150% scale = 720px tall) from inflating every tile; clamp keeps it legible. */
+html {
+  font-size: clamp(13px, min(calc(9.5px + 0.4vw), calc(5px + 1.2vh)), 17px);
+}
+
+:root {
+  --chevron: #1F1F1F;
+  --avatar-bg: #DBEAFE;
+  --avatar-text: #0058CE;
+  --text-secondary: #383838;
+  --role-text: #6B7280;
+  --workspace-pill-border: #E5E7EB;
+  --search-bg: #F3F4F6;
+  --search-placeholder: #9CA3AF;
+  --kbd-border: #E5E7EB;
+  --icon-btn-bg: #F3F4F6;
+  --icon-btn-navy: #0B1B3B;
+  --divider: #E5E7EB;
+
+  --shell-bg: #FFFFFF;
+  --page-bg: #FFFFFF;
+  --surface-muted: #F3F4F6;
+
+  --status-healthy-fg: #17603A;
+  --status-healthy-bg: #E3F4EA;
+  --status-warning-fg: #7A4B00;
+  --status-warning-bg: #FDF3DC;
+  --status-critical-fg: #9B1C1C;
+  --status-critical-bg: #FDECEA;
+  --status-info-fg: #2A36A0;
+  --status-info-bg: #E8EBFB;
+  --status-neutral-fg: #4B5563;
+  --status-neutral-bg: #F3F4F6;
+
+  --chart-1: #2563EB;
+  --chart-2: #059669;
+  --chart-3: #D97706;
+  --chart-4: #DC2626;
+  --chart-5: #7C3AED;
+  --chart-6: #0891B2;
+  --card-border: transparent;
+
+  --card-radius: 0.75rem;
+  --card-shadow: 0 0 0.3rem rgba(0, 0, 0, 0.1);
+  --card-shadow-hover: 0 0.5rem 1.5rem rgba(15, 23, 42, 0.1);
+
+  --sidebar-w: 5.75rem;
+  --header-h: 4.5rem;
+  --text-heading: #0F172A;
+  --text-muted: #64748B;
+
+  --icon-chip-bg: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(37, 99, 235, 0.05) 100%);
+  --icon-chip-fg: #003FC9;
+
+  --trend-up-bg: #F0FDF4;
+  --trend-up-fg: #008236;
+  --trend-down-bg: #FEF2F2;
+  --trend-down-fg: #C10007;
+
+  /* Compact spacing/type scale, in rem — these ride on the fluid html font-size above,
+     so they already scale continuously with viewport/zoom without needing their own clamp(). */
+  --space-2xs: 0.25rem;
+  --space-xs: 0.375rem;
+  --space-sm: 0.5rem;
+  --space-md: 0.625rem;
+  --space-lg: 0.875rem;
+
+  --card-pad: 0.625rem;
+  --page-pad-x: 0.75rem;
+  --page-pad-y: 0.5rem;
+
+  --font-page-title: 1.3125rem;
+  --font-card-title: 1rem;
+  --font-body: 0.9375rem;
+  --font-caption: 0.8125rem;
+  --font-value-lg: 2.25rem;
+  --font-value-md: 1.125rem;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+}
+
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+
+button:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+.font-mono-id {
+  font-family: ui-monospace, SFMono-Regular, "IBM Plex Mono", Menlo, monospace;
+}
+
+@keyframes page-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-transition {
+  animation: page-fade-in 0.25s ease-out;
+}
+
+@keyframes tap-pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(0.97);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.tap-pop:active {
+  animation: tap-pop 0.18s ease-out;
+}
+
+@keyframes launcher-jiggle {
+  0%, 100% {
+    transform: rotate(-1.5deg);
+  }
+  50% {
+    transform: rotate(1.5deg);
+  }
+}
+
+.launcher-jiggle {
+  animation: launcher-jiggle 0.5s ease-in-out infinite;
+  animation-delay: var(--jiggle-delay, 0s);
+}
+
+.card-interactive {
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.card-interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--card-shadow-hover);
+}
+
+.card-interactive:active {
+  transform: translateY(0) scale(0.99);
+}
+
+@keyframes app-wiggle {
+  0% { transform: rotate(-1.5deg); }
+  50% { transform: rotate(1.5deg); }
+  100% { transform: rotate(-1.5deg); }
+}
+
+.app-wiggle {
+  animation: app-wiggle 0.2s ease-in-out infinite;
+}
+
+.app-wiggle:nth-child(2n) {
+  animation-delay: 0.05s;
+}
+
+.app-wiggle:nth-child(3n) {
+  animation-delay: 0.1s;
+}

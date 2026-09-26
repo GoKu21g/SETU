@@ -1,0 +1,1152 @@
+
+SAHAYOGI SETU V2
+Detailed Architecture, Operations & Execution Blueprint
+Working Draft for Manual Review | 21 September 2026
+
+Core proposition — Setu is the internal ecosystem control plane. It governs, administers, observes, secures and orchestrates Sahayogi without duplicating business operations already owned by BoSS or another Sahayogi product.
+
+1. Executive Architecture
+Execution test — Every material capability must support: Detect → Investigate → Decide → Authorise → Execute → Verify → Record → Learn.
+Layer
+Responsibility
+Boundary
+Sahayogi One
+Identity, accounts, workspaces, memberships, product access.
+Not CRM/accounting/support.
+Sahayogi Products
+Actual customer and internal business work.
+Not central ecosystem administration.
+BoSS for Sahayogi
+Internal CRM, Customer Service, Finance, HR and workflows.
+Not platform control plane.
+Sahayogi Setu
+Governance, orchestration, reliability, entitlement, security, compliance and operational intelligence.
+Not a second ERP.
+1.1 Design principles
+One authoritative source per domain; Setu can aggregate without owning.
+Sahayogi must consume its own ecosystem through a protected internal workspace.
+Exceptional internal treatment should be governance, not separate product logic.
+Every privileged action needs permission, reason, audit and verification.
+Automation must include retries, failures, exceptions, approvals and compensation/rollback.
+Persona-aware views: business, support, engineering, security and compliance need different lenses.
+Controlled operations should replace ad-hoc production database changes.
+Compliance should be control/evidence based.
+Operational data must correlate workspace, product, service, release, integration, event and incident.
+Architecture must scale to many products, workspaces, organisations, providers and metered resources.
+2. System Boundaries and Ownership
+Capability
+System of record
+Setu treatment
+Leads / opportunities
+BoSS Sales CRM
+Context + deep link only.
+Customer cases
+BoSS Customer Service
+Context + diagnostics correlation.
+Accounting / invoices / receivables
+BoSS Finance & Accounting
+Consume approved commercial state for enforcement.
+HR
+BoSS HR
+Consume approved identity/offboarding events.
+WhatsApp business data
+Chat with Sahayogi
+Health, integration and usage context.
+Workspace identity
+Sahayogi One
+Administer only through authoritative APIs.
+Subscription / entitlement
+Platform subscription domain / Setu
+Own/govern.
+Provisioning state
+Setu
+Own/govern.
+Platform incident
+Setu
+Own/govern.
+Product business data
+Respective product
+Read only when operationally justified.
+2.1 Metadata required for every Setu field/action
+Attribute
+Decision
+Source of truth
+Which service owns the fact?
+Read path
+API, event projection, cache/query or deep link.
+Write authority
+Can Setu change it, and through which API/workflow?
+Audit
+What evidence is mandatory?
+Approval
+None, conditional, maker-checker or security approval.
+Classification
+Internal/confidential/restricted.
+Retention
+How long Setu retains projection/evidence.
+Failure owner
+Who receives the exception?
+3. System Internal Workspace / Tenant Zero
+One protected Sahayogi workspace.
+Cannot be accidentally deleted/disabled.
+Protected governance assignments and founders require special safeguards.
+Internal email/membership restrictions may be enforced.
+Highest/internal entitlements can be assigned under internal policy.
+Tenant Zero is first target for internal/alpha feature rollouts.
+Setu privilege is separate from membership in the internal workspace.
+Sales remains in BoSS CRM; support in BoSS Customer Service; accounting in BoSS Finance; HR in BoSS HR.
+Persona
+Normal Sahayogi workspace
+Setu
+Sales
+BoSS CRM
+No Setu by default.
+Finance
+BoSS Finance
+No Setu by default.
+Support
+BoSS Customer Service
+Diagnostic access if authorised.
+Platform Engineer
+Relevant products
+Operations/provisioning/health.
+Compliance
+Evidence-related access
+Controls/risks/audit.
+Founder
+Broad authorised visibility
+Executive control + explicit admin rights.
+4. Setu Capability Domains
+Domain
+Scope
+Ecosystem Registry
+Products, modules, services, dependencies, plans, features, environments, endpoints, meters, health signals.
+Workspace Administration
+Workspace 360, organisations, ownership, lifecycle and protected-workspace rules.
+Subscriptions & Entitlements
+Trials, plans, features, quantities, consumption limits, add-ons, overrides.
+Provisioning Orchestration
+Create/configure/upgrade/downgrade/suspend/reactivate/deprovision/retry/verify.
+Platform Operations
+Jobs, queues, schedulers, events, webhooks and controlled admin operations.
+Observability & Reliability
+Metrics, logs, traces, health, dependencies, incidents, SLO/SLA signals.
+Integration Control Centre
+Meta, Tally, BUSY, payments, email/SMS, tax APIs, AI/model providers.
+Usage & Metering
+Meters, usage events, aggregation, quotas, alerts and enforcement.
+Cost Intelligence
+Workspace/product/API/AI/storage/message cost attribution and unit economics.
+Security & Privileged Access
+RBAC/ABAC, MFA, sessions, temporary elevation, access reviews.
+Audit & Compliance
+Frameworks, controls, evidence, tests, findings, remediation, attestations.
+Risk & Vendor Governance
+Risks, treatments, vendors, criticality, reviews, third-party incidents.
+Configuration & Feature Management
+Flags, configuration, staged rollout, kill switches, beta/internal targeting.
+Release & Environment Governance
+Versions, deployments, migrations, rollout/rollback and environments.
+Automation / Rules / Workflow
+Events, conditions, rules, workflows, approvals, timers, escalations.
+Exception & Operations Inbox
+Failures, drift, approvals, incidents, compliance/security actions.
+Data Governance & Privacy Ops
+Classification, retention, privacy requests, deletion eligibility and evidence.
+Platform Analytics
+Adoption, provisioning success, reliability, multi-product usage and operational KPIs.
+Administrative Repair & Reconciliation
+Safe replay/re-sync/recalculate/repair and expected-vs-actual drift.
+5. Core Domain Objects
+Object
+Purpose / relationship
+Account
+Identity anchor linked to memberships and access.
+Workspace
+Primary customer/internal operating boundary.
+Organisation
+Business entity within a workspace where applicable.
+Product
+Commercial/application product.
+Service / Component
+Technical dependency supporting a product.
+Plan
+Commercial packaging definition.
+Subscription
+Workspace × product lifecycle record.
+Entitlement
+Effective feature/limit from plan, add-on or controlled override.
+Resource
+Provisioned product/infrastructure object.
+Integration
+Connection to internal/external provider.
+Meter / Usage Record
+Consumable definition and measured consumption.
+Environment
+Development, test, staging, production, future sandbox.
+Release / Deployment
+Version movement and operational state.
+Feature Flag
+Controlled exposure rule.
+Event
+Canonical occurrence emitted by a system.
+Workflow Run
+Execution instance of a multi-step process.
+Operation
+Privileged/admin action requested by human or automation.
+Exception
+Actionable failure or inconsistency.
+Incident
+Platform reliability/security event.
+Control / Evidence
+Compliance requirement implementation and proof.
+Risk / Vendor
+Governance objects for risk and third parties.
+Audit Event
+Immutable record of significant action/change.
+6. Persona-Based Operating Model
+Persona
+Primary question
+Primary Setu surfaces
+Founder / Executive
+Is the ecosystem healthy, controlled, compliant and commercially sensible?
+Executive Control Room, Product 360, risk/cost/compliance.
+Platform Administrator
+Can I administer workspaces/products safely?
+Workspace 360, subscriptions, entitlements, provisioning.
+Customer Operations Agent
+Can I resolve onboarding/lifecycle exceptions?
+Operations Inbox, Workspace 360, workflows.
+Technical Support Agent
+Why is this customer product not working?
+Diagnostics, incidents, integrations, timeline.
+DevOps / SRE
+What failed and what is affected?
+Health, incidents, metrics/logs/traces, releases.
+Engineering Lead
+Did a release/config change create this problem?
+Release 360, errors, rollout/rollback.
+Security Administrator
+Who has privileged access and what changed?
+Security, access reviews, sessions, audit.
+Compliance Officer
+Can controls be operated and evidenced?
+Frameworks, controls, evidence, risks, findings.
+Product Manager
+Who has which feature and how is it performing?
+Product 360, flags, usage, adoption.
+Commercial Administrator
+Is platform subscription state aligned with approved commercial state?
+Subscription 360, exceptions, approvals.
+Partner Operations
+Are partner/client assignments and delegated rights correct?
+Partner 360, assignments, access.
+Auditor / Reviewer
+Can I reconstruct actions independently?
+Read-only audit, evidence and timelines.
+7. Mandatory 360-Degree Views
+View
+Minimum information
+Workspace 360
+Identity, organisations, membership context, products, subscriptions, entitlements, usage, provisioning, integrations, health, CRM/support context, commercial state, timeline.
+Product 360
+Workspaces, plans, usage, dependencies, health, incidents, releases, cost, adoption, controls and risks.
+Subscription 360
+Plan, lifecycle, entitlements, add-ons, commercial-state projection, overrides, history, enforcement.
+Integration 360
+Provider, credential reference, state, last success/failure, webhooks, rate limits, affected workspaces, incidents.
+Incident 360
+Severity, impact, affected services/products/workspaces, timeline, owner, mitigations, releases/events, PIR.
+Release 360
+Version/build, environment, rollout cohort, before/after metrics, errors, pause/rollback status.
+Vendor 360
+Services, criticality, dependent products, data categories, reviews, renewals, risks and incidents.
+Control 360
+Framework mappings, owner, implementation, evidence, tests, findings and remediation.
+Risk 360
+Description, inherent/residual assessment, controls, owner, treatment, due dates and links.
+8. End-to-End Operational Use Cases
+Use case
+Trigger
+Execution
+Expected output
+Options / policy choices
+UC-01 New Trial Signup
+Website/product signup
+One creates identity/workspace; Setu creates trial subscription, entitlements and provisioning; BoSS internal CRM receives lead/context.
+Provisioning verified; one workspace retained for conversion.
+Automatic trial; approval-based trial; configurable duration; source/campaign attribution.
+UC-02 Trial to Paid
+Approved sale/commercial event
+Setu transitions the same workspace/subscription, applies paid plan, provisions deltas and verifies.
+No duplicate workspace/data.
+Immediate; scheduled effective date; maker-checker for special exceptions.
+UC-03 Customer Product Failure
+BoSS Customer Service case
+Support opens Workspace 360; Setu checks subscription, entitlement, integration, health and incidents.
+Cause classified customer-specific vs platform-wide.
+Deep-link; embedded diagnostics; controlled repair.
+UC-04 Integration Failure
+Token/connection error
+Authorised operator reconnects/repairs; reason, case reference, before/after state and verification are recorded.
+Healthy or escalated.
+Self-service reconnect; support-assisted; approval for sensitive action.
+UC-05 Platform Incident
+Monitoring threshold/correlation
+Setu creates/correlates incident, identifies impact, assigns owner and tracks mitigation/recovery.
+Impact and resolution evidenced.
+Auto-create; manual declaration; severity-specific workflow.
+UC-06 Bad Release
+Error spike after deployment
+Correlate release/telemetry; pause rollout; alert owner; controlled rollback if needed.
+Rollout contained and evidence retained.
+Observe-only; auto-pause; narrowly governed auto-rollback.
+UC-07 Overdue / Non-payment
+Approved commercial state from BoSS
+Apply grace/restriction/suspension policy at subscription level and verify enforcement.
+Accounting remains in BoSS; platform consequence in Setu.
+Immediate block; same-day override; due-date/grace; bypass with approval.
+UC-08 Payment / Reactivation
+BoSS confirms approved paid state
+Setu evaluates reactivation policy, restores entitlement/provisioning and verifies.
+Customer regains eligible service without manual recreation.
+Automatic; approval for exceptional cases; staged restoration.
+UC-09 Employee Offboarding
+Approved HR/offboarding event
+Identity/access consequences processed; Setu reconciles privileged roles, sessions, production access references, owned automations and pending approvals.
+No orphaned privileged access; evidence package generated.
+Immediate revocation; scheduled last-day execution; emergency offboarding.
+UC-10 Customer Cancellation
+Cancellation approved
+Setu controls effective date, restrictions, retention window, export/deletion eligibility and product deprovisioning.
+Lifecycle closes without premature data loss.
+End-of-term; immediate; retention hold; reactivation window.
+UC-11 Entitlement Override
+Business requests temporary increase
+Request includes reason, scope, expiry and commercial reference; approval if policy requires; Setu applies and later auto-expires.
+No permanent hidden exceptions.
+Temporary override; permanent plan change; emergency override.
+UC-12 Usage Threshold
+Consumption reaches threshold
+Metering engine raises warning/action; rule engine decides notification, restriction or escalation.
+Quota handled consistently.
+50/80/100% alerts; soft limit; hard limit; approved overage.
+UC-13 Configuration Drift
+Expected and actual states differ
+Reconciliation engine creates drift exception and proposes safe repair.
+Silent provisioning inconsistencies become visible.
+Auto-repair safe drift; manual approval; observe-only.
+UC-14 Privacy Request
+Verified eligible privacy request
+Setu orchestrates scope, retention/legal checks, product-specific tasks, exceptions and evidence.
+Request tracked end-to-end without Setu directly owning all source data.
+Access/correction/deletion workflows; legal hold; manual verification.
+UC-15 Quarterly Access Review
+Scheduled compliance control
+Population generated from privileged roles; reviewer retain/modify/revoke; actions executed and evidenced.
+Reusable compliance evidence.
+Quarterly; risk-based frequency; separate production/admin reviews.
+UC-16 Vendor Outage
+Critical provider degradation
+Vendor/integration health maps dependencies to products/workspaces and incidents.
+Impact visible across ecosystem.
+Provider status ingestion; manual declaration; automated impact correlation.
+UC-17 Data Repair
+Known safe operational inconsistency
+Authorised operator runs controlled repair action instead of direct SQL; pre-check, action, post-check and audit recorded.
+Production repair is repeatable and auditable.
+Replay event; resync access; recalc entitlement; rebuild index.
+UC-18 Feature Rollout
+New feature ready
+Tenant Zero → internal cohort → beta → percentage rollout → GA with telemetry gates.
+Controlled adoption and fast containment.
+Manual cohort; percentage; plan/workspace targeting; kill switch.
+9. Provisioning Orchestration
+Provisioning principle — Setu should know what was requested, what should exist, what actually exists, and whether the final state has been verified.
+Validate workspace/account state and prerequisites.
+Resolve product dependencies and plan.
+Create/transition subscription.
+Generate effective entitlements.
+Provision product resources.
+Apply organisation/user/product access.
+Apply configuration and limits.
+Run post-provision verification.
+Emit canonical completion/failure events.
+Create exception when retry policy is exhausted.
+Support compensation/rollback where a partially completed workflow cannot safely continue.
+9.1 Provisioning run states
+State
+Meaning
+Requested
+Accepted but not started.
+Validating
+Checking prerequisites/policy.
+In Progress
+Steps executing.
+Waiting External
+Awaiting provider/downstream response.
+Approval Pending
+Sensitive exception requires authorisation.
+Retrying
+Retry policy active.
+Partially Completed
+Some steps succeeded; intervention/compensation required.
+Failed
+Non-retryable or retry exhausted.
+Completed
+All required steps succeeded.
+Verified
+Post-condition checks confirm expected state.
+Compensated
+Partial changes safely reversed/neutralised.
+9.2 Required provisioning evidence
+Correlation ID and workflow run ID.
+Requested by / source event.
+Workspace, product, plan and target state.
+Every step with timestamp, attempt and result.
+External provider references where relevant.
+Failure classification and retry decision.
+Manual intervention and approver, if any.
+Final verification result and effective configuration.
+10. Subscription, Entitlement and Lifecycle Engine
+10.1 Independent lifecycle levels
+Workspace lifecycle: active, restricted, suspended, archived, etc., only where genuinely workspace-wide.
+Product subscription lifecycle: trial, active, grace, restricted, suspended, cancelled, expired.
+Provisioned resource lifecycle: requested, ready, degraded, failed, deprovisioning, removed.
+Integration lifecycle: pending, active, degraded, disconnected, expired/revoked.
+10.2 Entitlement types
+Type
+Example
+Enforcement
+Boolean
+advanced_reporting = true
+Feature access.
+Quantity
+users.max = 25
+Count-based.
+Consumption
+ai_tokens.monthly = 1,000,000
+Metered.
+Storage
+storage.gb = 100
+Metered/capacity.
+API
+pan_lookup.monthly = 500
+Metered.
+Product-specific
+whatsapp_numbers.max = 5
+Product-defined.
+10.3 Override controls
+Mandatory reason and business/technical reference.
+Scope limited to specific entitlement(s).
+Start/end date where temporary.
+Approver based on value/risk.
+Automatic expiry and reversion.
+Visible banner in Subscription/Workspace 360.
+Full before/after audit.
+11. Event, Rule and Workflow Architecture
+Layer
+Purpose
+Example
+Event Engine
+Record that something happened.
+subscription.expired
+Rule Engine
+Evaluate policy/condition.
+IF expired AND grace complete THEN initiate restriction.
+Workflow Engine
+Execute multi-step process.
+Validate → check exceptions → approve → restrict → verify → notify.
+Exception Engine
+Handle non-happy paths.
+Retry exhausted → operations queue.
+Scheduler / Timer
+Time-based transitions.
+Grace period ends after configured duration.
+11.1 Rule-builder options
+Simple no-code conditions for operations teams.
+Advanced expression mode for platform administrators.
+Versioned rules with draft/published states.
+Simulation/dry-run before activation.
+Effective dates and environment scope.
+Priority/conflict resolution.
+Kill switch for problematic rules.
+Rule execution audit and outcome metrics.
+12. Operations Inbox and Command Layer
+Setu should be task-oriented, not merely module-oriented. Each authorised persona receives a queue of items requiring action.
+Queue
+Examples
+Critical
+Severe incident, security event, widespread provisioning failure.
+Needs Action
+Failed provisioning, integration expiry, drift.
+Approvals
+Entitlement override, suspension, sensitive repair.
+Compliance
+Evidence due, failed control, overdue remediation.
+Security
+Access review, temporary privilege expiry, suspicious admin action.
+Reliability
+Error threshold, queue backlog, degraded dependency.
+Commercial Control
+Subscription transition requiring policy decision.
+12.1 Global search / command
+Search by workspace ID/name, organisation, user/account, subscription, integration/WABA/provider reference, event ID, incident ID, operation ID, support case reference and other approved identifiers.
+Search result must respect field-level permissions and data masking.
+Contextual actions appear only when authorised.
+High-risk actions require reason and may require approval.
+13. Observability, Reliability and Incident Management
+13.1 Observability layers
+Signal
+Purpose
+Metrics
+Latency, error rate, throughput, queue depth, resource/service health.
+Logs
+Detailed technical records for diagnosis.
+Traces
+Cross-service request path and latency/error correlation.
+Platform Events
+Business/platform lifecycle events such as workspace created or provisioning failed.
+Synthetic Checks
+Proactive verification of critical journeys.
+Dependency Health
+Internal/external service availability and degradation.
+13.2 Incident model
+Severity, status, commander/owner and technical owner.
+Affected product/service/component/environment.
+Affected workspace population and critical customers where policy permits.
+Detection source and first-seen timestamp.
+Linked releases, configuration changes, integrations and error groups.
+Timeline of actions/decisions.
+Mitigation, recovery and verification.
+Customer-support correlation without moving tickets out of BoSS.
+Post-incident review, root cause, contributing factors and follow-up actions.
+13.3 Optional reliability controls
+SLO/SLI definitions per critical service.
+Error-budget tracking where mature enough.
+Automated rollout pause on defined telemetry thresholds.
+Maintenance windows and planned-degradation notices.
+Runbook links and one-click safe diagnostic checks.
+14. Integration Control Centre
+Area
+Required fields/capabilities
+Provider Registry
+Provider, service, criticality, owner, products dependent.
+Connection
+Workspace/product/provider, status, credential reference, scopes.
+Health
+Last success, last failure, latency, rate-limit state.
+Webhook
+Endpoint, event types, signature/config status, delivery failures.
+Sync
+Last sync, next schedule, checkpoint, records/errors.
+Operations
+Reconnect, revalidate, retry webhook, resync where safe.
+Security
+Never casually expose secrets; use secret references and masked metadata.
+Impact
+Affected products/workspaces and linked incidents.
+14.1 Initial integration families
+Meta / WhatsApp Business Platform.
+Tally and BUSY connectors/bridge.
+Razorpay / PayU and future payment providers.
+GST/PAN/MSME and other paid APIs.
+Email/SMS providers.
+AI/model providers.
+Cloud/infrastructure providers where operationally useful.
+Internal Sahayogi service-to-service integrations.
+15. Usage, Metering and Cost Intelligence
+15.1 Metering pipeline
+Pipeline — Meter Definition → Consumption Event → Validation → Aggregation → Allowance/Limit Evaluation → Alert/Enforcement → Reporting.
+Meter example
+Possible dimension
+AI tokens
+Workspace, product, model, period.
+WhatsApp usage
+Workspace, WABA/number, message/conversation category where applicable.
+Paid API calls
+Workspace, API type, provider, success/failure.
+Storage
+Workspace, product, resource.
+Email/SMS
+Workspace, channel/provider.
+General API usage
+Workspace/product/API family.
+15.2 Cost intelligence
+Attribute provider/infrastructure cost to product/workspace where technically reliable.
+Track plan allowance versus actual consumption.
+Estimate unit economics by product/plan/workspace without replacing accounting.
+Flag abnormal cost spikes and possible leakage.
+Support pricing analysis using aggregated operational cost data.
+Keep financial accounting and statutory reporting in BoSS Finance.
+16. Security and Privileged Administration
+16.1 Required controls
+Least-privilege roles and scoped permissions.
+MFA/strong authentication requirements for privileged users.
+Separate permissions for view, diagnose, execute, approve and configure.
+Temporary elevation with automatic expiry.
+Sensitive-field masking.
+Session/device/context visibility where appropriate.
+Regular access reviews.
+Segregation of duties for high-risk operations.
+Break-glass access with stricter logging and post-use review.
+16.2 Impersonation / View-as-Customer
+Recommended approach — If introduced, impersonation must be an exceptional diagnostic capability, not a casual login shortcut.
+Mandatory reason and linked case/incident.
+Explicit permission and optional approval based on scope.
+Short-lived session.
+Persistent visual banner indicating impersonation.
+Restrict destructive/financial/sensitive actions.
+Full audit of session start, end and material actions.
+Customer-data access minimisation.
+16.3 Maker-checker candidates
+Permanent suspension or deletion.
+Large/permanent entitlement override.
+High-value commercial exception.
+Sensitive data repair.
+Break-glass access.
+Critical configuration/feature change affecting many workspaces.
+High-impact privacy/deletion action.
+17. Audit, Compliance, Risk and Privacy
+17.1 Compliance architecture
+Control-based model — Framework → Requirement → Control → Implementation → Evidence → Test → Finding → Remediation.
+The same internal control may map to multiple frameworks. This avoids separate checkbox implementations for ISO 27001, DPDPA, GDPR and future frameworks. Exact legal/control mappings should be validated against the applicable framework version and legal advice before being treated as compliance conclusions.
+17.2 Framework support
+ISO/IEC 27001 control/evidence management.
+Digital Personal Data Protection Act (DPDPA) operational controls where applicable.
+GDPR operational controls where applicable.
+Internal security/privacy policies.
+Future frameworks through configurable framework/requirement mappings.
+17.3 Control record
+Field
+Example / purpose
+Control ID
+Stable internal identifier, e.g., SEC-IAM-004.
+Statement
+What must be true.
+Owner
+Accountable role/person.
+Frequency
+Continuous/monthly/quarterly/annual/event-driven.
+Implementation
+How Sahayogi operates the control.
+Evidence Source
+System-generated or manual.
+Framework Mapping
+Relevant external/internal requirements.
+Test Method
+How effectiveness is checked.
+Status
+Effective / exception / failed / not due.
+Findings
+Observed deficiency.
+Remediation
+Action, owner, due date and verification.
+17.4 Evidence types
+Automated evidence from Setu/identity/monitoring/deployment systems.
+Manual evidence uploaded or attested where automation is unavailable.
+Evidence snapshots that preserve the reviewed population and result.
+Integrity metadata: source, collection time, collector, period and related control run.
+17.5 Risk register
+Risk description and category.
+Asset/product/vendor/workspace scope.
+Inherent likelihood/impact using approved methodology.
+Existing controls.
+Treatment: mitigate, transfer, avoid or formally accept according to policy.
+Owner, due dates and review cadence.
+Residual risk assessment.
+Links to incidents, findings, vendors and remediation.
+17.6 Vendor governance
+Vendor/service registry and business owner.
+Criticality and dependent Sahayogi products.
+Data categories shared/processed.
+Security/privacy review status.
+Contract/DPA/renewal metadata where applicable.
+Known risks and compensating controls.
+Incident history and service-health correlation.
+Offboarding/exit requirements.
+17.7 Privacy operations
+Verified request intake reference.
+Identity/scope validation.
+Data-system discovery through registry mappings.
+Retention/legal-hold checks.
+Tasks to authoritative products rather than uncontrolled direct deletion.
+Exception handling and approvals.
+Completion verification and evidence package.
+Separate configurable workflows for access, correction and deletion/erasure where applicable.
+18. Data Governance
+Capability
+Requirement
+Data Classification
+Define classes and handling rules.
+Data Inventory
+Map key data categories to products/services/vendors.
+Retention
+Policy-driven retention by data/evidence type.
+Deletion Eligibility
+Determine when data can be removed versus retained.
+Legal/Compliance Hold
+Prevent deletion when an approved hold applies.
+Data Access Audit
+Record privileged access to restricted data where required.
+Data Residency Metadata
+Track hosting/processing location where operationally necessary.
+Export
+Controlled data export with reason, authorisation and audit.
+19. Release, Environment, Configuration and Feature Governance
+19.1 Environment registry
+Development, test, staging and production as first-class environments.
+Product/service version by environment.
+Configuration baseline and drift indicators.
+Environment-specific endpoints and dependency references.
+Maintenance and deployment status.
+19.2 Release governance
+Release/build/commit reference.
+Deployment initiator and pipeline reference.
+Target environment and services.
+Database migration/configuration changes.
+Rollout strategy and cohort.
+Pre/post-deployment health metrics.
+Pause/rollback decision and evidence.
+Linked incident/error spike.
+19.3 Feature flags
+Internal/Tenant Zero targeting.
+Named beta cohort.
+Percentage rollout.
+Plan/workspace/product targeting.
+Start/end schedule.
+Kill switch.
+Owner and expiry/review date.
+Telemetry gate and rollback condition.
+Audit of every production flag change.
+20. Administrative Repair and Reconciliation
+Principle — Common operational repair should become a safe, repeatable, permission-controlled operation rather than an undocumented SQL/script intervention.
+Operation
+Example safeguards
+Replay event
+Idempotency check, event preview, target consumer, reason.
+Recalculate entitlement
+Show current vs calculated result before apply.
+Re-sync product access
+Dry-run diff, then authorised apply.
+Retry provisioning step
+Eligibility check and retry counter.
+Rebuild index/cache
+Scope, expected impact, verification.
+Refresh integration state
+Provider health check and before/after state.
+Reconcile subscription
+Compare commercial/subscription/product state and propose repair.
+20.1 Drift model
+Expected state generated from authoritative subscription/configuration.
+Actual state obtained from product/resource adapters.
+Difference classified as benign, actionable or critical.
+Safe classes may auto-repair; higher-risk classes require review.
+All repair attempts retain before/after evidence.
+21. Executive Control Room
+The founder/executive landing view should prioritise exceptions and decisions, not vanity metrics.
+Area
+Examples
+Platform
+Healthy/degraded/critical products and services; active incidents.
+Customers
+Active workspaces, new provisioning, failed provisioning, material service impact.
+Commercial Control
+Subscriptions entering grace/restriction, exceptional overrides.
+Operations
+Critical exceptions, pending high-risk approvals, unresolved drift.
+Security
+Critical alerts, privileged actions, access-review status.
+Compliance
+Controls due/failed, overdue remediation, material risks.
+Releases
+Production deployments, paused rollouts, rollback events.
+Cost
+Material API/AI/cloud cost variance and abnormal usage.
+Dependencies
+Critical vendor/provider degradation.
+Design requirement — Every executive metric should drill into the underlying population/evidence and, where appropriate, the accountable owner/action.
+22. Suggested Navigation / Information Architecture Options
+Navigation should be finalised only after capability ownership is approved. Three viable patterns are listed for review.
+Option
+Structure
+Advantages
+Risks
+A. Functional
+Home; Workspaces; Products; Subscriptions; Operations; Reliability; Security; Compliance; Platform; Analytics; Settings.
+Easy to understand and implement.
+Can become module-heavy.
+B. Persona / Workbench
+Executive; Customer Ops; Technical Ops; Security; Compliance; Product; Platform Engineering.
+Strong task focus.
+Same object may appear in several workbenches.
+C. Hybrid — Recommended for review
+Global Home/Search + core objects (Workspaces/Products) + operational workbenches (Operations/Reliability/Security/Compliance/Platform).
+Balances object navigation with execution queues.
+Needs disciplined permissions and information architecture.
+22.1 Candidate left navigation under Hybrid
+Home / Control Room
+Global Search / Command
+Operations Inbox
+Workspaces
+Products & Services
+Subscriptions & Entitlements
+Provisioning
+Integrations
+Reliability & Incidents
+Usage & Cost
+Releases & Environments
+Configuration & Feature Flags
+Security & Access
+Compliance & Evidence
+Risk & Vendors
+Audit Explorer
+Platform Analytics
+Administration / Registry / Policies
+23. Permission Architecture
+Permission dimension
+Examples
+Scope
+System, product, workspace, environment, integration, compliance domain.
+Action
+View, diagnose, execute, approve, configure, export.
+Sensitivity
+Normal, privileged, highly restricted.
+Time
+Permanent vs temporary elevation.
+Context
+Production-only restriction, break-glass, case-linked diagnostic.
+Data field
+Mask/unmask restricted fields.
+Segregation
+Requester cannot approve own high-risk action.
+23.1 Example role bundles
+Executive Viewer: broad read-only summaries; explicit approval rights separately granted.
+Customer Operations: workspace/subscription/provisioning actions, limited technical detail.
+Technical Support: diagnostics and safe repair; no commercial override by default.
+Platform Operations: provisioning, events, integrations, incidents and repair.
+SRE/DevOps: service health, releases, incidents and infrastructure-related operations.
+Security Admin: privileged access, sessions, reviews and security audit.
+Compliance Manager: frameworks, controls, evidence, risks, findings and reviews.
+Auditor: immutable read-only evidence/audit access.
+Super Admin: extremely limited population; not a substitute for granular roles.
+24. Notification and Escalation Model
+Notifications should be event/policy driven, not hard-coded independently in modules.
+Channels may include in-app, email, Chat with Sahayogi/WhatsApp, Slack/Teams or other approved internal channels later.
+Severity and persona determine channel and escalation.
+Alert deduplication and suppression are required to avoid alert fatigue.
+Every actionable notification should deep-link to the exact Setu object/exception.
+Escalation timers should support acknowledgement, reassignment and management escalation.
+Severity
+Typical treatment
+Info
+In-app/history; no interruption.
+Warning
+Operations Inbox + optional channel notification.
+High
+Immediate assigned alert; acknowledgement expected.
+Critical
+Immediate multi-channel escalation and incident workflow.
+25. Audit Trail Specification
+25.1 Events that must be auditable
+Authentication and privileged session events where appropriate.
+Role/permission/elevation changes.
+Workspace/product/subscription lifecycle changes.
+Plan/entitlement/add-on/override changes.
+Provisioning and repair operations.
+Feature/configuration changes.
+Release/rollback governance decisions.
+Integration credential/configuration metadata changes.
+Security/compliance approvals and access reviews.
+Data export/privacy/deletion actions.
+Rule/workflow definition changes and publication.
+Maker-checker request, approval/rejection and execution.
+25.2 Minimum audit fields
+Event ID and correlation ID.
+Actor type: human/system/service.
+Actor identity and effective role.
+Timestamp and environment.
+Target object/type/ID.
+Action and reason/reference.
+Before/after representation or safe diff.
+Approval reference if applicable.
+Source IP/device/session metadata where policy permits and is useful.
+Result: success/failure/partial.
+Linked workflow/incident/case/change request.
+26. Reporting and Analytics
+Audience
+Recommended reports / KPIs
+Founder
+Platform health, critical exceptions, multi-product adoption, cost variance, risk/compliance status.
+Customer Operations
+Provisioning time, failure rate, exception ageing, trial/activation operational funnel.
+Support
+Incidents correlated to cases, diagnostic resolution path, integration failure trends.
+Engineering/SRE
+Availability, latency, error rate, MTTA/MTTR, deployment-related failures, recurring exceptions.
+Product
+Feature adoption, plan/entitlement usage, limit pressure, rollout cohorts.
+Security
+Privileged access population, review completion, elevation usage, sensitive operations.
+Compliance
+Control effectiveness, evidence completion, findings ageing, remediation overdue, risk treatment.
+Commercial Control
+Subscription states, grace/restriction counts, override ageing; accounting KPIs remain in BoSS.
+Platform Economics
+Cost by product/provider/workspace cohort, abnormal consumption and margin-supporting operational data.
+27. Non-Functional Requirements
+Area
+Requirement direction
+Availability
+Setu outage must not unnecessarily break already-running customer products; control-plane dependencies should be deliberately designed.
+Performance
+Common Workspace/Product 360 queries should be fast through projections/read models rather than expensive cross-product live joins.
+Scalability
+Support growth in workspaces, events, logs, usage records and products without redesigning core identity.
+Security
+Least privilege, encryption, secret management, audit, secure admin operations.
+Resilience
+Idempotent workflows, retries, dead-letter/exception handling, graceful provider failure.
+Observability
+Setu itself must be fully observable.
+Data Integrity
+Versioning/concurrency controls for sensitive updates.
+Extensibility
+New products/providers/meters/frameworks should be registry/config driven where practical.
+Accessibility
+Admin UI should meet appropriate accessibility standards and keyboard navigation expectations.
+Searchability
+Global identifiers/correlation and indexed operational search.
+Auditability
+Important changes reconstructable without relying on personal memory or chat/email history.
+28. Technical Architecture Direction
+This document intentionally does not freeze implementation technology, but the logical architecture should support the following components.
+Control-plane API layer.
+Authoritative adapters to Sahayogi One and product services.
+Event bus / canonical event contracts.
+Workflow/orchestration engine.
+Rules/policy engine.
+Entitlement service.
+Metering/usage pipeline.
+Operational read models / projections for 360 views.
+Audit event store with appropriate immutability controls.
+Observability integrations for metrics/logs/traces.
+Notification/escalation service.
+Search/index layer for operational objects.
+Secrets-management integration rather than secret storage in normal Setu tables.
+Compliance/risk/evidence domain.
+Reconciliation workers.
+Fine-grained authorisation/policy enforcement.
+28.1 Canonical correlation
+Mandatory foundation — A single business journey must be reconstructable across Account → Workspace → CRM context → Subscription → Provisioning → Product Resources → Events → Operations → Incidents. Stable IDs and correlation IDs should be designed before large-scale implementation.
+29. State Machines to Define Before Development
+Domain
+States to formalise
+Workspace
+Draft/pending/active/restricted/suspended/archived or final approved equivalents.
+Subscription
+Trial/active/grace/restricted/suspended/cancelled/expired.
+Provisioning
+Requested/validating/in-progress/waiting/approval/retrying/partial/failed/completed/verified/compensated.
+Integration
+Pending/active/degraded/disconnected/expired/revoked.
+Incident
+Detected/triaged/investigating/mitigating/monitoring/resolved/closed.
+Exception
+Open/assigned/in-progress/waiting/approved/rejected/resolved/closed.
+Control Test
+Not due/due/in-progress/effective/exception/failed.
+Finding
+Open/accepted/in-remediation/verification/closed.
+Risk Treatment
+Open/planned/in-progress/accepted/mitigated/closed.
+Feature Rollout
+Draft/internal/beta/partial/GA/paused/rolled-back/retired.
+30. Validation and Exception Standards
+30.1 Common validation classes
+Identity/workspace consistency.
+Subscription-product-workspace consistency.
+Plan/entitlement compatibility.
+Environment and product dependency readiness.
+Permission and segregation-of-duties checks.
+Commercial-state eligibility where relevant.
+Retention/legal-hold eligibility for destructive operations.
+Idempotency and duplicate-event checks.
+Provider rate-limit/credential/connection readiness.
+Concurrency/version check before sensitive update.
+30.2 Exception record must include
+What failed and at which step.
+Business/technical impact.
+Retryability.
+Suggested next action/runbook.
+Owner/team and SLA/priority.
+Related workspace/product/subscription/integration.
+Correlation ID and technical evidence.
+Attempts/history.
+Approval needed, if any.
+Final resolution and verification.
+31. Options Requiring Manual Product Decisions
+The following are deliberately left as decision points rather than silently assumed.
+Decision
+Option A
+Option B
+Option C / note
+Setu navigation
+Functional modules
+Persona workbenches
+Hybrid object + workbench model.
+Entitlement service
+Central service immediately
+Central policy with product-side cache
+Phased migration from product hard-coding.
+Rule engine
+Build internally
+Adopt workflow/rules engine
+Hybrid; keep canonical Setu UX.
+Incident creation
+Manual
+Automatic threshold
+Hybrid with correlation/deduplication.
+Rollout safety
+Observe only
+Auto-pause
+Auto-rollback only for narrow approved cases.
+Customer repair
+Support executes
+Customer self-service
+Tiered by risk.
+Impersonation
+No impersonation
+Read-only diagnostic mode
+Governed temporary impersonation.
+Commercial enforcement
+Immediate
+Grace period
+Product/plan-specific policy.
+Override approval
+No approval under thresholds
+Maker-checker above thresholds
+Risk-based approval matrix.
+Compliance evidence
+Manual
+Automated where possible
+Hybrid, preferred.
+Drift repair
+Alert only
+Safe auto-repair
+Risk-classified hybrid.
+Cost attribution
+Provider totals
+Product allocation
+Workspace-level attribution where reliable.
+Privacy operations
+Case orchestration only
+Automated product tasks
+Phased by product maturity.
+Partner administration
+Central Setu
+Product-specific
+Central relationship + product adapters.
+Deployment control
+Visibility only
+Approval/governance
+Direct deployment control later if justified.
+32. Proposed Implementation Phases
+Phase
+Scope
+Exit criteria
+Phase 0 — Architecture Lock
+Ownership matrix, domain objects, IDs, event contracts, state machines, permission model.
+No unresolved duplication between Setu, One, BoSS and products for core domains.
+Phase 1 — Control Foundation
+Registry, Workspace/Product 360, subscriptions, entitlements, audit, global search, basic operations inbox.
+Operators can inspect and safely administer core workspace/product state.
+Phase 2 — Provisioning & Reconciliation
+Workflow engine, provisioning, exceptions, retries, verification, drift detection.
+Major product lifecycle changes are orchestrated and auditable.
+Phase 3 — Reliability & Integrations
+Observability, incidents, integration centre, event/webhook operations.
+Support/SRE can diagnose platform vs customer-specific failures quickly.
+Phase 4 — Security & Compliance
+Privileged access, access reviews, controls/evidence, risk/vendor, privacy orchestration.
+Core governance workflows run inside Setu with evidence.
+Phase 5 — Usage, Cost & Automation
+Metering, cost intelligence, rules, advanced automation and alerts.
+Usage limits/cost/automation are policy-driven.
+Phase 6 — Release & Advanced Platform Ops
+Feature rollout, deployment governance, advanced repair, deeper analytics.
+Setu functions as mature ecosystem control plane.
+32.1 Important sequencing note
+Do not start from screens — First lock ownership, identifiers, state machines, event contracts and permissions. UI can then be designed around real operational journeys rather than recreating legacy modules.
+33. Acceptance Test Matrix for Setu V2
+Test
+Pass condition
+Owner test
+Can the founder identify material platform, security, compliance, cost and operational exceptions without opening five products?
+Business operator test
+Can a commercial/customer-ops user understand subscription and lifecycle state without seeing unnecessary technical internals?
+Support test
+Can support distinguish customer configuration failure from platform incident within a few steps?
+Technical test
+Can engineering correlate error → service → release → affected workspaces → incident?
+Provisioning test
+Can every lifecycle operation show request, execution, retry, exception and verification?
+Security test
+Can a user perform only explicitly authorised operations, with sensitive actions controlled?
+Audit test
+Can an independent reviewer reconstruct who changed what, why, who approved and whether it succeeded?
+Compliance test
+Can a control produce repeatable evidence and track findings/remediation?
+Failure test
+When automation fails halfway, is the system explicit about partial state and safe recovery?
+Drift test
+Can Setu detect mismatch between subscription intent and product reality?
+Tenant Zero test
+Can Sahayogi operate its own business through the same products customers use?
+Scale test
+Can a new product/provider/meter/framework be added without redesigning the entire system?
+Data-boundary test
+Does Setu avoid becoming the source of truth for CRM/support/accounting data?
+Repair test
+Can common production fixes be executed safely without ad-hoc SQL?
+Decision test
+Does every dashboard number lead to evidence, owner or action?
+34. Manual Review Checklist
+Confirm Setu vs Sahayogi One ownership boundaries.
+Confirm BoSS modules that remain authoritative for Sahayogi's own business operations.
+Confirm Tenant Zero governance rules.
+Confirm product/subscription/entitlement hierarchy.
+Confirm lifecycle state machines.
+Confirm which provisioning actions must support rollback/compensation.
+Confirm integration families and ownership.
+Confirm initial metered resources and enforcement policies.
+Confirm privileged roles and maker-checker matrix.
+Confirm whether impersonation is required and at what risk level.
+Confirm initial compliance frameworks and control-library approach.
+Confirm risk scoring methodology separately before implementation.
+Confirm privacy workflows and legal validation process.
+Confirm release/feature-flag governance scope.
+Confirm operational repair actions allowed in V1.
+Confirm navigation model after capabilities are approved.
+Confirm implementation phases and which products join provisioning/reconciliation first.
+35. Items Explicitly Deferred for the Next Design Round
+Detailed database/schema design.
+API specifications and event payload schemas.
+Exact RBAC permission catalogue.
+Exact compliance mappings to individual ISO/GDPR/DPDPA provisions.
+Screen-by-screen UI wireframes.
+Final left-navigation labels.
+Technology/vendor selection for workflow/rules/observability engines.
+Detailed SLO/SLA targets.
+Data retention durations and legal policy values.
+Product-specific provisioning adapters.
+Commercial pricing logic and accounting treatment.
+Reason for deferral — These should be designed only after this architecture is manually reviewed and the ownership/capability boundaries are accepted.
+36. Recommended Next Deliverable After Review
+After manual review, convert this blueprint into a formal Setu V2 Product & System Requirements Specification with five linked artefacts:
+Capability Ownership Matrix: capability → owner → source of truth → Setu visibility → Setu action → event/API → internal-workspace exception.
+Role & Permission Matrix: persona → object → action → scope → approval requirement.
+State & Workflow Catalogue: lifecycle diagrams, validations, exceptions, retries, compensation and audit.
+Information Architecture: navigation, 360 views, Operations Inbox, global search and persona dashboards.
+Technical Contract Pack: canonical IDs, event contracts, APIs, read models, audit schema and integration adapters.
+Manual-review objective — Do not approve this document because it sounds comprehensive. Test it against real Sahayogi situations: onboarding, failure, support, payment state, employee exit, customer cancellation, bad deployment, vendor outage, access review, privacy request and data repair. Any scenario that cannot move end-to-end through Detect → Investigate → Decide → Authorise → Execute → Verify → Record → Learn exposes a missing requirement.

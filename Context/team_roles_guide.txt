@@ -1,0 +1,814 @@
+
+Sahayogi Setu V2
+Team roles and screen design guide
+Who builds what, which persona each screen serves, and how every screen should be designed.
+Based on: Sahayogi Setu V2 Detailed Blueprint (21 September 2026), Setu Website Audit: Sidebar Feature Line Inventory (21 September 2026), and the Setu design artifacts (visual blueprint, sidebar explained, app screens canvas).
+Version 1, 22 September 2026. Working draft for team review.
+1. How to use this document
+Every screen in Setu V2 exists because one of the 12 blueprint personas needs it. This guide gives each of the 7 team members a persona cluster, the screens they own, the live pages they must migrate or fix, and a design brief for each screen.
+Read it in this order:
+Section 2 for the design rules every screen follows.
+Section 3 for the final navigation and which role lands where.
+Section 4 for the team split.
+Section 5 for your own member section and screen briefs.
+Sections 6 to 8 for open decisions, the build process and the brief template.
+Rule from the blueprint (§32.1): do not start from screens. Before drawing, each member confirms the data owner, states and permissions for their screen using the brief. The brief is the contract; the screen is drawn from it.
+2. Design rules for every screen
+2.1 Principles
+Task first. Each screen answers its persona's question in the first view, before scrolling.
+Every number drills down. A tile or count always opens the records, owner and next action behind it (blueprint §21, §33 decision test).
+No privileged action without a reason. Any action that changes a customer, plan, access or data opens a reason dialog, writes an audit record, and asks for approval when policy requires (§1.1, §16.3).
+Setu shows, it does not copy. CRM, invoices, tickets and HR stay in BoSS; logins stay in Sahayogi One. Screens link to them.
+Mask personal data by default. Email, phone, PAN and GSTIN are masked unless the role has unmask permission; unmasking is audited.
+Explicit states. Every record shows its state from the agreed state machine (§29), never a vague label.
+No placeholders in production. No "Coming soon" banners, no pages without data sources in the navigation.
+2.2 Page layout
+Area
+Specification
+Canvas size
+Desktop 1440 x 900 for design artboards. Layout must also work at 1280 wide.
+Sidebar
+248 px wide, navy background, grouped sections, count badges for queues. Shared component owned by Member 1.
+Top bar
+64 px high: global search, quick add, help and runbooks, Production label, on-call person, notifications, account. Shared component.
+Page shell (list pages)
+Title and one-line purpose, then stat tiles, then filters and search, then table, then a detail panel on the right (about 400 px) when a row is selected.
+Page shell (360 pages)
+Breadcrumb, object header (name, ID, status, key facts, primary actions), tab bar, then a 3-column card grid on the Overview tab.
+Spacing
+Page padding 22 to 28 px; gaps 12 to 16 px; card radius 14 px; table row height about 44 px.
+
+2.3 Colour and type
+Token
+Value
+Use
+Ink
+#141A33
+Main text
+Muted
+#4A5170
+Secondary text, labels
+Background
+#F5F6FA
+Page background
+Surface
+#FFFFFF
+Cards, tables, panels
+Line
+#DDE1EC
+Borders and dividers
+Sidebar
+#1B2250
+Navigation background
+Primary
+#3346C4
+Primary buttons, links, selected rows
+Healthy / success
+#17603A on #E3F4EA
+Healthy, active, passed
+Warning
+#7A4B00 on #FDF3DC
+Grace, slow, needs attention
+Critical / failed
+#9B1C1C on #FDECEA
+Failed, degraded, overdue, critical
+Info / approval
+#2A36A0 on #E8EBFB
+Approvals, trial, informational
+Governance
+#4F2C94 on #EFE8FB
+Security and compliance items
+
+Fonts: Figtree for all interface text (headings 26 px bold, section titles 16 to 17 px bold, body 14 px, captions 12 to 13 px). IBM Plex Mono only for IDs: workspace IDs, correlation IDs, audit IDs, codes.
+Never use colour alone to show state; every status pill also carries a word (Healthy, Failed, Grace).
+2.4 Shared components
+Component
+How it works
+Status pill
+Rounded label, 12 px bold, colour from the table above plus a word. One pill per state; states come from §29.
+Stat tile
+Label, large number, one coloured note line. Always a link to the filtered list behind it.
+Data table
+Grey header row, 44 px rows, selected row tinted with a 3 px primary bar on the left. Columns sortable; filters above.
+Detail panel
+Right side, 380 to 400 px. Title, status, key facts as a label/value list, suggested next step box, action buttons at the bottom.
+Reason dialog
+Opens for every privileged action: reason (required), reference (case, deal, incident), preview of the change, approver if needed. Confirm writes the audit record.
+Before/after diff
+Red line for old value, green line for new value, monospaced. Used in audit, repair and overrides.
+Timeline
+Time, coloured dot, one-line event; newest first on 360 pages.
+Tabs
+Underline style; selected tab bold with a 3 px primary underline.
+Buttons
+Primary (filled indigo), secondary (white with border), destructive (filled red, always behind a reason dialog). Minimum height 40 px, 44 px for main actions.
+
+2.5 States every screen must design
+Loaded with realistic sample data.
+Empty: what it means and the next step, for example "No incidents in the last 30 days".
+Loading: skeleton rows, never a blank page.
+Error: what failed and a retry, with the correlation ID for support.
+No permission: the page explains which role is needed; never a silent blank.
+Masked data: how masked fields look and how an allowed user unmasks them.
+2.6 Accessibility
+Real buttons, links, inputs and labels; icon-only buttons have an accessible name.
+Text contrast at least 4.5 to 1; touch and click targets at least 44 px for main actions.
+Full keyboard navigation, including Ctrl K for global search (§27).
+3. Final navigation and role landing pages
+3.1 Sidebar structure
+The sidebar follows the blueprint's recommended Hybrid model (§22): core objects plus work queues. Each item lists the screen number from Section 5.
+Group
+Items (screen number)
+Home
+Control room (1), Operations inbox (6)
+Customers
+Workspaces (3), Subscriptions (4), Provisioning and drift (5), Approvals (19), Partners (20)
+Products
+Products (10), Releases (11), Feature flags (12)
+Reliability
+Health (7), Incidents (9), Integrations (8)
+Security and compliance
+Security and access (13), Access reviews (14), Compliance (16), Controls (17), Risks and vendors (18), Audit explorer (15)
+Business
+Usage and cost (2)
+Settings
+Catalogue: brands, products, modules, plans, add-ons, bundles, discount rules (Member 5); Rules and workflows (Member 3, second pass)
+
+Changed from earlier drafts: People and admins becomes a People tab inside Workspace 360; Customer messages centre becomes a Message delivery tab inside Integrations; Platform Logs becomes a Logs tab inside Health; Allocations becomes a tab inside Provisioning and drift.
+3.2 What each role sees and where they land
+Design each screen for the role that lands on it. Menu items a role cannot use are hidden, not greyed out.
+Persona
+Role bundle
+Lands on
+Can act on
+Design for them
+Founder / Executive
+Executive Viewer
+Control room
+View all; approvals only if granted
+Plain language, exceptions first, one click to evidence
+Platform Administrator
+Platform Operations
+Workspaces
+Workspaces, subscriptions, provisioning, repair
+Safe actions with previews and diffs
+Customer Operations Agent
+Customer Operations
+Operations inbox
+Lifecycle actions, retries, assignments
+Queue-driven, suggested next step on every item
+Technical Support Agent
+Technical Support
+Global search
+Diagnostics, reconnect, safe repair
+Search-first; customer vs platform answer in 3 steps
+DevOps / SRE
+SRE / DevOps
+Health
+Incidents, releases, integrations
+Dense data, time ranges, links to logs and traces
+Engineering Lead
+SRE / DevOps
+Releases
+Pause, rollback approval, flags
+Before/after comparisons, release-to-incident links
+Security Administrator
+Security Admin
+Security and access
+Roles, sessions, elevation, reviews
+Who has what, what changed, expiry dates
+Compliance Officer
+Compliance Manager
+Compliance
+Controls, evidence, findings, risks
+Due dates, status, evidence completeness
+Product Manager
+Executive Viewer + product scope
+Products
+Flags (request), read usage
+Adoption and limit pressure per feature
+Commercial Administrator
+Customer Operations + commercial scope
+Approvals
+Overrides, grace, suspension requests
+Subscription state only; money stays in BoSS
+Partner Operations
+Customer Operations + partner scope
+Partners
+Assignments, delegated rights
+Partner to client mapping, rights per client
+Auditor / Reviewer
+Auditor
+Audit explorer
+Read-only, export
+No action buttons; filters, integrity, export
+4. Team split
+Each member owns one persona cluster from design to working code. Screens marked built already exist on the design canvas and need review and completion, not a restart.
+Member
+Personas
+Screens owned
+Migrate from live
+Fix first
+1
+All (shell)
+Sidebar, Top bar (built)
+Global chrome, 15-item left navigation
+Production label, role-based menu visibility
+2
+Founder / Executive
+1 Control room (built), 2 Usage and cost
+Dashboard, Analytics, Ops AI Cost
+Add health, security, compliance, release tiles
+3
+Platform Admin, Customer Ops
+3 Workspace 360 (built), 4 Subscription 360, 5 Provisioning and drift, 6 Operations inbox (built)
+Customer 360, Subscriptions, Provisioning, Allocations, Internal Ops hub, Dead-Letters
+Reason on Edit and Allocate; masking; drift check
+4
+Technical Support, DevOps / SRE
+7 Health (built), 8 Integration 360, 9 Incident 360
+Gateway Health, Platform Logs, Communications
+Per-product uptime; longer than 60-minute history
+5
+Engineering Lead, Product Manager
+10 Product 360, 11 Release 360, 12 Feature flags; Settings: Catalogue
+Product Views, Setup: Brands, Products, Modules, Plans, Add-ons
+Launch URLs; separate plans from add-ons
+6
+Security Admin, Auditor
+13 Security and access, 14 Access reviews, 15 Audit explorer (built)
+Users (staff stub), Audit Logs
+Working staff directory; prove every action is audited
+7 (lead)
+Compliance, Commercial Admin, Partner Ops
+16 Compliance, 17 Control 360, 18 Risk 360, 19 Approvals, 20 Partner 360
+Approvals, Setup: Discount rules, Bundles
+Verify approval workflow end to end
+
+Lead workload note: Member 7 also coordinates and merges. If needed, hand Partner 360 to Member 3, whose Workspace 360 work is closest to it.
+5. Screen briefs by member
+Each brief is the design contract for one screen. Sample data uses the same customers across screens (Sharma Traders, Gupta Textiles, Mehta Pharma, Verma Logistics) so the prototype reads as one story.
+Member 1: Shell (all personas)
+Owns
+Sidebar and Top bar components used by every screen.
+Sidebar
+Groups and items from Section 3.1; count badges on Operations inbox, Incidents and Approvals; items hidden per role (Section 3.2); active state per screen.
+Top bar
+Global search (workspace, organisation, user, subscription, WABA or provider reference, event, incident, operation and support case IDs; results respect masking, §12.1); quick add; help and runbooks; red Production label (another colour for staging); on-call person; notifications; account menu with role and any active elevation.
+From the live audit
+Keep search, quick add, manuals icon, notifications and account menu. Replace the 15-item left navigation with Section 3.1. Remove "Sahayogi One Onboarding: Coming Soon" banners.
+Done when
+Every screen imports the same sidebar and top bar; every menu item opens a real screen; a role never sees a menu item it cannot use.
+
+Member 2: Founder / Executive
+1. Executive Control Room
+Personas
+Founder / Executive
+Question it answers
+Is the ecosystem healthy, controlled, compliant and commercially sensible?
+Header
+Title, one-line purpose, period selector (24 hours, 7 days, 30 days).
+Main body
+Four tiles: products healthy, approvals waiting, open incidents, cost variance. "Needs a decision" list. Product health list. Row of nine blueprint areas (§21): platform, customers, commercial control, operations, security, compliance, releases, cost, dependencies.
+Detail panel / tabs
+No detail panel; every number opens the filtered screen it belongs to, with owner shown.
+Actions and rules
+View only. Approvals open the Operations inbox if the founder holds approval rights.
+Data ownership
+Reads summaries from every module; owns nothing.
+From the live audit
+Dashboard today has 12 commercial tiles, lifecycle funnel, recent allocations, critical alerts, quick actions, today's priorities. Keep customers, renewals, overdue and failed activations; add health, security, compliance, release and dependency status.
+Sample data
+Tax Sahayogi degraded, 310 workspaces affected; 3 approvals waiting; AI spend up 38 percent.
+Done when
+Owner test (§33): the founder can identify every material exception without opening another product.
+
+2. Usage and cost
+Personas
+Founder, Commercial Administrator
+Question it answers
+What does each product and customer cost us, and where is usage heading?
+Header
+Tiles: spend month to date, variance against last period, top cost product, workspaces over 80 percent of allowance.
+Main body
+Cost by product and by provider (cloud, AI, WhatsApp, SMS, paid APIs). Top workspaces by cost. Allowance versus actual per plan. Anomaly list.
+Detail panel / tabs
+Workspace cost breakdown with usage meters and plan allowance.
+Actions and rules
+Read only. Flag an anomaly to the Operations inbox.
+Data ownership
+Owns cost attribution records; reads usage and provider bills. Accounting stays in BoSS Finance.
+From the live audit
+Ops AI Cost (Azure OpenAI, labelled estimated) and Analytics (allocation mix, customer growth). Label estimates clearly; add non-AI costs.
+Sample data
+AI cost doubled this week; 80 percent from 3 workspaces on the Starter plan.
+Done when
+A cost spike can be traced to a product and workspace in three clicks.
+
+Member 3: Platform Administrator and Customer Operations
+3. Workspace 360 (built)
+Personas
+Platform Administrator, Customer Operations, Technical Support
+Question it answers
+What is the complete, current state of this customer?
+Header
+Breadcrumb; name, workspace ID (mono), status pill, organisations, owner, customer since; links to BoSS CRM account, cases, invoices; actions: Change plan, Restrict, Reactivate, Allocate product, View as customer (read-only).
+Main body
+Tabs: Overview, Subscriptions, Entitlements, People, Integrations, Usage, Timeline, Audit. Overview: subscriptions, entitlements should vs actual, usage bars, integrations, recent timeline.
+Detail panel / tabs
+People tab replaces the separate People and admins page: every user, role per product, MFA, last active, sessions; filters for admins without MFA.
+Actions and rules
+Every action opens the reason dialog. View as customer: reason, linked case, time limit, visible banner (§16.2). Tenant Zero workspace cannot be deleted or disabled.
+Data ownership
+Reads identity from Sahayogi One, commercial context from BoSS; owns nothing it displays except drift and lifecycle actions.
+From the live audit
+Customer 360 with 5 tabs, Allocate Product and Edit. Add reason on Edit, masking of email and phone, Integrations, People and Timeline tabs.
+Sample data
+Sharma Traders: Chat Pro active, Tax trial, BoSS in grace; WhatsApp numbers should be 5, actually 3.
+Done when
+Support test (§33): customer-specific vs platform failure is clear within a few steps.
+
+4. Subscription 360
+Personas
+Commercial Administrator, Platform Administrator
+Question it answers
+Is this subscription in the right state, and why?
+Header
+Product, plan and version, status pill (§29: trial, active, grace, restricted, suspended, cancelled, expired), commercial state from BoSS, renewal date.
+Main body
+Lifecycle timeline; entitlements table (six types, §10.2); add-ons; active overrides with expiry banner; enforcement policy (grace days, restrict, suspend).
+Detail panel / tabs
+Override detail: reason, scope, start and end, approver, before and after.
+Actions and rules
+Request override, change plan, apply grace, suspend. Large or permanent overrides and suspension use maker-checker (§16.3).
+Data ownership
+Owns subscriptions, entitlements and overrides; reads paid and overdue state from BoSS.
+From the live audit
+Subscriptions list (11 statuses, product, billing and renewal filters) becomes the list view. The detail page is new.
+Sample data
+Mehta Pharma BoSS: users 25 to 35 until 22 October, approved by Aarav Mehta.
+Done when
+Business operator test: lifecycle state is clear without technical detail; every override has an end date.
+
+5. Provisioning and drift
+Personas
+Platform Administrator
+Question it answers
+Did every customer actually get what they should have?
+Header
+Tiles: runs in progress, failed, waiting external, unresolved drift.
+Main body
+Tabs: Runs (11 states, §9.1), Allocations, Drift, Repairs. Drift shows expected vs actual, classed benign, actionable or critical.
+Detail panel / tabs
+Run detail: every step with time, attempt, result, provider reference, correlation ID, verification result (§9.2). Repair detail: dry-run diff before apply.
+Actions and rules
+Retry step, compensate, run repair (replay event, recalculate entitlement, resync access, retry step, rebuild cache, refresh integration, reconcile subscription). All need reason; sensitive repairs need approval.
+Data ownership
+Owns provisioning runs, drift records and repair operations.
+From the live audit
+Provisioning (Draft, Waiting for owner activation, Active) and Allocations board (allocation vs activation, stalled retries, entitlement unsynced). Add the nightly drift check and safe repairs.
+Sample data
+Gupta Textiles: storage should be 50 GB, actual 20 GB, class actionable.
+Done when
+Provisioning and drift tests (§33) pass; no repair needs ad-hoc SQL.
+
+6. Operations inbox (built)
+Personas
+Customer Operations, every role for its own queue
+Question it answers
+What needs a person, and who owns it?
+Header
+Title, open count, queue buttons: Critical, Needs action, Approvals, Security, Compliance, Reliability, Commercial control (§12). Filters: assigned to me, product.
+Main body
+Table: type, item, workspace and product, owner, age against deadline.
+Detail panel / tabs
+Exception record (§30.2): what failed and where, impact, retryability, suggested next step and runbook, owner and deadline, related objects, correlation ID, attempts, approval needed, resolution.
+Actions and rules
+Assign, retry, approve, reject, escalate, resolve with verification. Escalation timers per severity (§24).
+Data ownership
+Owns exceptions; reads from every module.
+From the live audit
+Internal Ops hub (pending queue, failed and retrying, manual reviews, escalation watchlist) and Approvals merge here. Dead-Letters feed exceptions into Needs action.
+Sample data
+Provisioning failed after 3 retries, Sharma Traders, 18 minutes left of 1 hour.
+Done when
+Every item has an owner and deadline; nothing waits without escalation.
+
+Second pass for Member 3: Settings, Rules and workflows: rules in no-code and advanced modes, draft and published versions, dry-run, effective dates, priority, kill switch, run history (§11.1).
+Member 4: Technical Support and DevOps / SRE
+7. Health (built)
+Personas
+DevOps / SRE, Technical Support
+Question it answers
+Is each product working right now, and what is affected?
+Header
+Title, Declare incident button, time range.
+Main body
+Card per product: status, error rate, p95 latency, 30-day uptime. Dependencies and outside providers. Synthetic checks on login, signup, message send.
+Detail panel / tabs
+Tabs on a product: Errors (grouped crashes from app and servers), Logs (technical logs and traces, searched by workspace or correlation ID), Synthetic checks, SLOs.
+Actions and rules
+Declare incident; open logs and traces in the monitoring stack.
+Data ownership
+Reads metrics, logs and traces from the observability stack; stores only health summaries and links.
+From the live audit
+Gateway Health (circuit breakers, rate limits, entitlement lookup failures, latency, 60 minutes, capped at 200) and Platform Logs. Platform Logs becomes the Logs tab, labelled "Technical logs" to separate it from Audit explorer.
+Sample data
+Tax Sahayogi degraded: errors 6.2 percent, p95 2.4 s.
+Done when
+Technical test: error to service to release to affected workspaces to incident in one flow.
+
+8. Integration 360
+Personas
+Technical Support, DevOps / SRE
+Question it answers
+Is this connection healthy, and who is affected when it is not?
+Header
+Provider, service, criticality, owner, status pill (pending, active, degraded, disconnected, expired, revoked).
+Main body
+List of providers and their connections per workspace. Provider detail: last success and failure, latency, rate-limit state, webhooks, sync checkpoint and schedule, affected workspaces, linked incidents.
+Detail panel / tabs
+Tabs: Connections, Webhooks, Sync, Message delivery (lifecycle messages: queued, sent, failed, suppressed per channel), Impact.
+Actions and rules
+Reconnect, revalidate, retry webhook, resync (reason, case reference, before and after). Secrets shown only as masked references (§14).
+Data ownership
+Owns connection records; secrets stay in the vault.
+From the live audit
+Ops Communications (delivery log by channel) becomes the Message delivery tab. The rest is new.
+Sample data
+Meta WhatsApp token expired 2 hours ago for Sharma Traders.
+Done when
+A provider outage shows affected workspaces before customers call (UC-16).
+
+9. Incident 360
+Personas
+DevOps / SRE, Engineering Lead, Technical Support
+Question it answers
+What broke, who is affected, and who is fixing it?
+Header
+Incident ID, severity, status (detected, triaged, investigating, mitigating, monitoring, resolved, closed), commander, time open.
+Main body
+Affected products, services and workspaces; detection source; timeline; linked releases, config changes, integrations, error groups and BoSS cases; mitigation and recovery.
+Detail panel / tabs
+Post-incident review tab: root cause, contributing factors, follow-up actions with owners.
+Actions and rules
+Declare, change severity, post update, request rollback, close with review.
+Data ownership
+Owns incidents; links BoSS cases without moving tickets out of BoSS.
+From the live audit
+Not live; only a Critical Alerts widget exists. New build.
+Sample data
+INC-0142: Tax Sahayogi errors after release 4.2; 310 workspaces; 12 BoSS cases linked.
+Done when
+UC-05 and UC-06 run end to end with evidence.
+
+Member 5: Engineering Lead and Product Manager
+10. Product 360
+Personas
+Product Manager, Founder
+Question it answers
+Who has this product, how is it performing, and what does it depend on?
+Header
+Product name, brand, module count, launch URL, owner, health pill.
+Main body
+Tabs: Overview, Workspaces and allocations, Plans, Modules, Usage and adoption, Dependencies, Health and incidents, Releases, Cost, Controls and risks.
+Detail panel / tabs
+Module detail: rollout phase, plans that include it, adoption.
+Actions and rules
+Read for most roles; product owners edit description and URL through the catalogue.
+Data ownership
+Reads registry, usage, health, releases and cost.
+From the live audit
+Product Views (11 product cards, allocation health) and Setup Products and Modules. All 11 show URL pending: fill them. Resolve brand vs product inconsistencies.
+Sample data
+Chat with Sahayogi: 14 modules, Chatbot Flows phase 6, WhatsApp Payments phase 7.
+Done when
+Product Manager can answer "who has which feature and how is it performing" from one page.
+
+11. Release 360
+Personas
+Engineering Lead, DevOps / SRE
+Question it answers
+Did a release or config change create this problem?
+Header
+Version, build and commit, environment, rollout cohort, status (rolling out, paused, rolled back, complete).
+Main body
+Before and after metrics (errors, latency); affected workspaces; database migrations and config changes; linked incident.
+Detail panel / tabs
+Rollout timeline with pause and rollback decisions and evidence.
+Actions and rules
+Pause rollout; request rollback (approval). Auto-pause on thresholds.
+Data ownership
+Owns release records; deployment stays in CI (visibility only).
+From the live audit
+Not live. New build.
+Sample data
+Tax Sahayogi 4.2 paused at 22 percent; error rate 6.2 percent vs 0.3 percent before.
+Done when
+UC-06: a bad release is contained and evidenced.
+
+12. Feature flags
+Personas
+Product Manager, Engineering Lead
+Question it answers
+Who has this feature switched on, and is it safe to widen?
+Header
+Flag name, owner, state (draft, internal, beta, partial, GA, paused, rolled back, retired), expiry date.
+Main body
+Targeting: Tenant Zero, named beta cohort, percentage, plan, workspace or product; schedule; telemetry gate; adoption and error rate by cohort.
+Detail panel / tabs
+Change history of every production flag change.
+Actions and rules
+Change targeting (reason), kill switch, retire. Changes affecting many workspaces need approval.
+Data ownership
+Owns flags. Note the difference: the Feature Matrix (in Catalogue) defines what a plan includes; flags control rollout.
+From the live audit
+Not live as rollouts. Feature Matrix exists in Setup Plan and Pricing.
+Sample data
+New Chat broadcast editor: Tenant Zero, then 10 percent beta.
+Done when
+UC-18 rollout path works with a kill switch.
+
+Also for Member 5: Settings, Catalogue: brands, products, modules, plans with price versions, entitlement templates and the Feature Matrix, add-ons, bundles, discount rules, lead sources (if CRM stays). Separate true plan tiers from add-on packs; keep standard plans read-only from the shared pricing catalogue.
+Member 6: Security Administrator and Auditor
+13. Security and access
+Personas
+Security Administrator
+Question it answers
+Who has privileged access to Setu, and is it controlled?
+Header
+Tiles: staff with access, privileged users, active elevations, break-glass sessions to review, staff without MFA.
+Main body
+Tabs: Staff users, Roles and permissions, Sessions, Temporary elevation, Break-glass.
+Detail panel / tabs
+Role editor with the seven permission dimensions (§23): scope, action (view, diagnose, execute, approve, configure, export), sensitivity, time, context, data field, segregation. Starting bundles: Executive Viewer, Customer Operations, Technical Support, Platform Operations, SRE / DevOps, Security Admin, Compliance Manager, Auditor, Super Admin.
+Actions and rules
+Grant or revoke role, grant temporary elevation (auto-expiry), end session, review break-glass. No one approves their own request.
+Data ownership
+Identity from Sahayogi One; Setu owns roles, grants and approvals.
+From the live audit
+Users page is a non-functional stub with 4 user types. Needs the Sahayogi One read endpoint; hide until it works.
+Sample data
+Kabir Singh: SRE, break-glass 08:16 to 08:30, review pending.
+Done when
+Security test: users can perform only explicitly authorised operations.
+
+14. Access reviews
+Personas
+Security Administrator, managers as reviewers, Auditor
+Question it answers
+Is every privileged access still justified?
+Header
+Campaign name, period, progress, due date.
+Main body
+Population snapshot of privileged users across Setu and all products; reviewer; decision per person (retain, modify, revoke); execution status.
+Detail panel / tabs
+Offboarding runs from BoSS HR exit events: roles revoked, sessions ended, owned automations and approvals reassigned (UC-09).
+Actions and rules
+Start campaign, record decision, execute revocations, export evidence.
+Data ownership
+Owns review campaigns and offboarding runs.
+From the live audit
+Not live. New build.
+Sample data
+Q3 review: 118 admins, 41 left to review, closes in 3 days.
+Done when
+UC-15 produces reusable evidence; UC-09 leaves no orphaned access.
+
+15. Audit explorer (built)
+Personas
+Auditor / Reviewer, Security Administrator
+Question it answers
+Can I reconstruct who changed what, why, who approved and whether it worked?
+Header
+Tiles: events, today, system, human. Export signed report.
+Main body
+Filters: date, actor, action, entity, product, workspace, result. Table: time, who, what, result.
+Detail panel / tabs
+All §25.2 fields: event and correlation IDs, actor type and role, target, action, reason and reference, before and after diff, approval, session metadata, result, linked workflow or incident; integrity check.
+Actions and rules
+Read and export only. The Auditor role sees no other actions anywhere.
+Data ownership
+Owns the append-only audit store; products send admin actions through the SDK.
+From the live audit
+Audit Logs exists with correlation ID but is empty. Verify every privileged action writes a record; add reason, before and after, approval and result.
+Sample data
+10:12 Aarav Mehta approved override for Mehta Pharma; 10:13 applied and verified.
+Done when
+Audit test (§33) passes for every event type in §25.1.
+
+Member 7 (lead): Compliance, Commercial Administrator and Partner Operations
+16. Compliance
+Personas
+Compliance Officer
+Question it answers
+Are our controls working, and is the evidence ready?
+Header
+Tiles: controls effective, controls failed or with exceptions, evidence due this month, findings overdue, open privacy requests.
+Main body
+Frameworks (ISO 27001, DPDPA, GDPR, internal policies) with coverage; controls due; findings ageing.
+Detail panel / tabs
+Tabs: Controls, Evidence, Findings, Privacy requests (UC-14: intake, scope, legal-hold check, tasks to products, completion proof), Data governance (classification, inventory, retention, legal hold).
+Actions and rules
+Upload or attest evidence, raise finding, assign remediation, complete privacy request.
+Data ownership
+Owns controls, evidence, findings and privacy cases.
+From the live audit
+Not live. New build.
+Sample data
+SEC-IAM-004 quarterly access review: evidence due 30 September.
+Done when
+Compliance test: a control produces repeatable evidence and tracks findings.
+
+17. Control 360
+Personas
+Compliance Officer, Auditor
+Question it answers
+Is this one control designed, operated and evidenced?
+Header
+Control ID, statement, owner, frequency, status (not due, due, in progress, effective, exception, failed).
+Main body
+Framework mappings, implementation, evidence source, test method, evidence snapshots with integrity metadata, findings and remediation (§17.3, §17.4).
+Detail panel / tabs
+Evidence snapshot: population reviewed, result, collector, period.
+Actions and rules
+Run test, attach evidence, raise finding.
+Data ownership
+Owns the control record.
+From the live audit
+Not live. New build.
+Sample data
+SEC-IAM-004 mapped to ISO 27001 access control and DPDPA security safeguards.
+Done when
+An auditor can verify the control without asking anyone.
+
+18. Risk 360 and vendors
+Personas
+Compliance Officer, Founder
+Question it answers
+What could hurt us, and what are we doing about it?
+Header
+Risk ID, category, owner, inherent and residual rating, treatment status.
+Main body
+Scope (asset, product, vendor, workspace), existing controls, treatment (mitigate, transfer, avoid, accept), due dates, links to incidents and findings (§17.5).
+Detail panel / tabs
+Vendors tab (Vendor 360, §17.6): services, criticality, dependent products, data shared, review status, contract and DPA renewal, incidents, exit requirements.
+Actions and rules
+Create risk, change treatment, schedule review; add vendor review.
+Data ownership
+Owns risks and vendor records.
+From the live audit
+Not live. New build.
+Sample data
+Dependency on one WhatsApp provider: residual high, treatment mitigate.
+Done when
+Founder sees material risks with owners in the control room.
+
+19. Approvals
+Personas
+Commercial Administrator, Customer Operations
+Question it answers
+Is subscription state aligned with approved commercial decisions?
+Header
+Tiles: pending, escalated to Super Admin, subscriptions entering grace or restriction, overrides older than 30 days.
+Main body
+Tabs: Approvals (statuses: pending, escalated, approved, rejected, auto-approved, overridden, withdrawn; kind, subject, value, requested by, level) and Commercial control (grace and restriction transitions needing a decision).
+Detail panel / tabs
+Approval detail: request, reason, reference, value, policy level, preview of the change, history.
+Actions and rules
+Approve, reject, escalate. Requester can never approve their own request.
+Data ownership
+Owns approval requests; reads commercial state from BoSS.
+From the live audit
+Approvals page (7 statuses, levels, escalation) is live but empty. Verify end to end; discount rules and bundles configuration sit in Catalogue.
+Sample data
+25 percent discount for Verma Logistics escalated to Super Admin.
+Done when
+Every commercial exception has an approver and an audit record.
+
+20. Partner 360
+Personas
+Partner Operations
+Question it answers
+Are partner and client assignments and delegated rights correct?
+Header
+Partner name, type, status, owner, number of client workspaces.
+Main body
+Client workspaces assigned; delegated rights per client and product; access history.
+Detail panel / tabs
+Assignment detail: rights granted, granted by, start and end, product adapter status.
+Actions and rules
+Assign or remove client, change delegated rights (reason, approval for broad rights).
+Data ownership
+Setu owns the central relationship; products enforce rights through adapters (§31 recommendation).
+From the live audit
+Not live. Partner object also missing from blueprint §5; add it to the data model first.
+Sample data
+A CA firm partner managing 12 client workspaces on Tax Sahayogi.
+Done when
+Partner Operations can answer their question from one page.
+
+6. Open decisions before build
+Decision
+Why it matters
+Owner
+Do Lifecycle CRM, Billing (Create Invoice) and Support stay in Setu or move to BoSS?
+Live Setu has them; the blueprint (§2, §33 data-boundary test) says they belong in BoSS. No member builds them until decided.
+CEO
+If invoicing stays in Setu, GST handling
+Invoices show one flat 18 percent line; Indian invoices need CGST and SGST or IGST, HSN or SAC codes, and e-invoicing above the turnover limit.
+CEO and Finance
+Sahayogi One read endpoint for staff users
+Screen 13 cannot work without it.
+Sahayogi One team
+Plans vs add-ons data model
+BoSS has 30 plans, many duplicating the Add-ons catalogue.
+Engineering
+Partner object in the data model
+Needed for screen 20.
+Engineering
+The 15 blueprint decisions (§31)
+Navigation, entitlement caching, rule engine, incident creation, rollout safety, impersonation and more.
+CEO and senior developers
+7. How we build
+7.1 Working rules
+Fill the screen brief (Section 8) and get it reviewed before designing.
+Build each screen as its own artboard file; only the lead merges into the shared canvas to avoid overwrites.
+Start from the nearest built screen (Workspace 360, Operations inbox, Health or Audit explorer) and keep its layout and components.
+Use the shared sample customers so screens connect into one story.
+Wire the sidebar active state and cross-links (for example inbox item to Provisioning run) before review.
+7.2 Order
+Step
+What happens
+1. Contracts
+Confirm owners, IDs, state machines (§29) and permissions for every screen. Settle open decisions.
+2. Shell and foundation
+Member 1 finalises sidebar and top bar with role visibility; Member 6 defines roles and audit fields every screen uses.
+3. Screens in parallel
+Members 2 to 7 build their screens from the briefs.
+4. Connect
+Lead merges artboards; links between screens are wired.
+5. Review against personas
+Walk each of the 12 personas through their question and the §33 acceptance tests.
+7.3 Persona check before sign-off
+Persona
+Question
+Answered by screens
+Founder / Executive
+Healthy, controlled, compliant, commercially sensible?
+1, 2, 10, 18
+Platform Administrator
+Can I administer workspaces and products safely?
+3, 4, 5
+Customer Operations Agent
+Can I resolve onboarding and lifecycle exceptions?
+6, 3
+Technical Support Agent
+Why is this customer's product not working?
+3, 8, 9
+DevOps / SRE
+What failed and what is affected?
+7, 9, 11
+Engineering Lead
+Did a release or config change create this?
+11, 12
+Security Administrator
+Who has privileged access and what changed?
+13, 14, 15
+Compliance Officer
+Can controls be operated and evidenced?
+16, 17, 18
+Product Manager
+Who has which feature and how is it performing?
+10, 12
+Commercial Administrator
+Is subscription state aligned with approved commercial state?
+4, 19
+Partner Operations
+Are partner and client assignments and rights correct?
+20
+Auditor / Reviewer
+Can I reconstruct actions independently?
+15, 17
+8. Screen brief template
+Copy this table for any new screen. If a row cannot be filled, ask before designing.
+Personas
+Who uses it (from the 12 personas)
+Question it answers
+The persona's question in their words
+Header
+Title, identifiers, status, key facts, primary actions
+Main body
+Tiles, filters, table or cards
+Detail panel / tabs
+What appears when a row is opened
+Actions and rules
+Each action, reason required, approval required, who can do it
+Data ownership
+What Setu owns vs reads from One, BoSS or a product
+From the live audit
+Which live page this replaces or extends, and what to fix
+Sample data
+Shared sample customers
+Done when
+A test anyone can check, ideally from blueprint §33
