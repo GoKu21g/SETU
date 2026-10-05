@@ -780,8 +780,8 @@ export default function SreIntegrationsPage() {
                   <div className="grid grid-cols-3 gap-2 text-center text-xs">
                     <div className={`p-3 rounded-xl border ${
                       selectedIntegration.circuitBreaker.includes("Closed")
-                        ? "border-emerald-500 bg-emerald-50 text-emerald-950 font-bold ring-2 ring-emerald-500/20"
-                        : "border-slate-200 bg-slate-50 text-slate-500"
+                        ? "border-emerald-500 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-950 dark:text-emerald-200 font-bold ring-2 ring-emerald-500/20"
+                        : "border-[var(--divider)] bg-[var(--search-bg)]/60 dark:bg-slate-900/40 text-[var(--text-muted)]"
                     }`}>
                       <div className="text-sm mb-1">Closed</div>
                       <div className="text-[10px]">Normal traffic passing 100%</div>
@@ -789,8 +789,8 @@ export default function SreIntegrationsPage() {
 
                     <div className={`p-3 rounded-xl border ${
                       selectedIntegration.circuitBreaker.includes("Half")
-                        ? "border-amber-500 bg-amber-50 text-amber-950 font-bold ring-2 ring-amber-500/20"
-                        : "border-slate-200 bg-slate-50 text-slate-500"
+                        ? "border-amber-500 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/40 text-amber-950 dark:text-amber-200 font-bold ring-2 ring-amber-500/20"
+                        : "border-[var(--divider)] bg-[var(--search-bg)]/60 dark:bg-slate-900/40 text-[var(--text-muted)]"
                     }`}>
                       <div className="text-sm mb-1">Half-Open</div>
                       <div className="text-[10px]">5% Canary testing recovery</div>
@@ -798,22 +798,22 @@ export default function SreIntegrationsPage() {
 
                     <div className={`p-3 rounded-xl border ${
                       selectedIntegration.circuitBreaker.includes("Open")
-                        ? "border-rose-500 bg-rose-50 text-rose-950 font-bold ring-2 ring-rose-500/20"
-                        : "border-slate-200 bg-slate-50 text-slate-500"
+                        ? "border-rose-500 dark:border-rose-700 bg-rose-50 dark:bg-rose-950/40 text-rose-950 dark:text-rose-200 font-bold ring-2 ring-rose-500/20"
+                        : "border-[var(--divider)] bg-[var(--search-bg)]/60 dark:bg-slate-900/40 text-[var(--text-muted)]"
                     }`}>
                       <div className="text-sm mb-1">Open</div>
                       <div className="text-[10px]">Traffic halted / Short-circuiting</div>
                     </div>
                   </div>
 
-                  <div className="mt-4 pt-3 border-t border-[var(--divider)] text-xs text-slate-600 space-y-1.5">
+                  <div className="mt-4 pt-3 border-t border-[var(--divider)] text-xs text-[var(--text-muted)] space-y-1.5">
                     <div className="flex justify-between">
                       <span>Trip Threshold:</span>
-                      <strong className="font-mono text-slate-800">&gt; 5% errors over 30s rolling window</strong>
+                      <strong className="font-mono text-[var(--text-heading)]">&gt; 5% errors over 30s rolling window</strong>
                     </div>
                     <div className="flex justify-between">
                       <span>Auto-Reset Probe Interval:</span>
-                      <strong className="font-mono text-slate-800">120s cooldown</strong>
+                      <strong className="font-mono text-[var(--text-heading)]">120s cooldown</strong>
                     </div>
                   </div>
                 </div>
@@ -938,24 +938,24 @@ export default function SreIntegrationsPage() {
             </div>
 
             <div className="space-y-3.5 my-4 text-xs">
-              <div className="rounded-xl border border-indigo-200 bg-indigo-50/70 p-3 text-indigo-950">
+              <div className="rounded-xl border border-indigo-200 dark:border-indigo-900 bg-indigo-50/70 dark:bg-indigo-950/40 p-3 text-indigo-950 dark:text-indigo-200">
                 <strong>Governance Rule:</strong> Upstream credential mutation is restricted to Platform Operations. SRE request initiates an approval ticket with linked incident telemetry.
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                <label className="block text-[11px] font-semibold text-[var(--text-heading)] mb-1">
                   Target Upstream Provider
                 </label>
-                <div className="p-2.5 rounded-xl bg-slate-50 border border-[var(--divider)] font-semibold text-slate-800">
+                <div className="p-2.5 rounded-xl bg-[var(--search-bg)] border border-[var(--divider)] font-semibold text-[var(--text-heading)]">
                   {modalIntegration.provider} ({modalIntegration.id})
                 </div>
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                <label className="block text-[11px] font-semibold text-[var(--text-heading)] mb-1">
                   Incident Link / Justification
                 </label>
-                <div className="p-2.5 rounded-xl bg-slate-50 border border-[var(--divider)] font-semibold text-slate-800">
+                <div className="p-2.5 rounded-xl bg-[var(--search-bg)] border border-[var(--divider)] font-semibold text-[var(--text-heading)]">
                   {modalIntegration.linkedIncident
                     ? `Correlated to ${modalIntegration.linkedIncident} (Active Degradation)`
                     : "Routine credential verification and health re-check"}
@@ -967,7 +967,7 @@ export default function SreIntegrationsPage() {
               <button
                 type="button"
                 onClick={() => setModalIntegration(null)}
-                className="tap-pop rounded-xl border border-[var(--divider)] px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+                className="tap-pop rounded-xl border border-[var(--divider)] px-3.5 py-1.5 text-xs font-semibold text-[var(--text-heading)] hover:bg-[var(--search-bg)]"
               >
                 Cancel
               </button>

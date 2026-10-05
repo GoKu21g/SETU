@@ -493,6 +493,46 @@ type InspectorTab =
   | "correlated-incidents"
   | "audit-history";
 
+interface CanaryStageItem {
+  stage: string;
+  weight: string;
+  status: string;
+  variant: "passed" | "alert" | "active" | "halted" | "pending";
+}
+
+function getCanaryStages(rel: SreReleaseFull): CanaryStageItem[] {
+  if (rel.status === "Correlated to Incident" || rel.canaryStatus.toLowerCase().includes("rollback")) {
+    return [
+      { stage: "Stage 1", weight: "5% Internal", status: "Passed", variant: "passed" },
+      { stage: "Stage 2", weight: "25% Tenancy", status: `Alert Fired (${rel.telemetryDiff.errorRateAfter}%)`, variant: "alert" },
+      { stage: "Stage 3", weight: "50% Regional", status: "Halted", variant: "halted" },
+      { stage: "Stage 4", weight: "100% Global", status: "Blocked", variant: "halted" },
+    ];
+  }
+  if (rel.canaryWeight === 100 || rel.canaryStatus === "100% Promoted" || rel.rolloutStrategy === "Rolling Update") {
+    return [
+      { stage: "Stage 1", weight: "5% Internal", status: "Passed", variant: "passed" },
+      { stage: "Stage 2", weight: "25% Tenancy", status: "Passed", variant: "passed" },
+      { stage: "Stage 3", weight: "50% Regional", status: "Passed", variant: "passed" },
+      { stage: "Stage 4", weight: "100% Global", status: "Promoted (100%)", variant: "passed" },
+    ];
+  }
+  if (rel.canaryWeight <= 10) {
+    return [
+      { stage: "Stage 1", weight: "5% Internal", status: "Active (0.00% Err)", variant: "active" },
+      { stage: "Stage 2", weight: "25% Tenancy", status: "Scheduled", variant: "pending" },
+      { stage: "Stage 3", weight: "50% Regional", status: "Queued", variant: "pending" },
+      { stage: "Stage 4", weight: "100% Global", status: "Queued", variant: "pending" },
+    ];
+  }
+  return [
+    { stage: "Stage 1", weight: "5% Internal", status: "Passed", variant: "passed" },
+    { stage: "Stage 2", weight: "25% Tenancy", status: "Active", variant: "active" },
+    { stage: "Stage 3", weight: "50% Regional", status: "Queued", variant: "pending" },
+    { stage: "Stage 4", weight: "100% Global", status: "Queued", variant: "pending" },
+  ];
+}
+
 export default function SreReleasesPage() {
   const [releases, setReleases] = useState<SreReleaseFull[]>(SRE_RELEASES_DATA);
   const [selectedId, setSelectedId] = useState<string>("rel-01");
@@ -943,16 +983,16 @@ export default function SreReleasesPage() {
 
                     <div className="shrink-0 flex items-center gap-1">
                       {isCorrelated ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border border-rose-300 animate-pulse">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-300 border border-rose-300 dark:border-rose-800 animate-pulse">
                           <AlertTriangle size={10} />
                           CORRELATED (UC-06)
                         </span>
                       ) : rel.canaryWeight < 100 ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
                           {rel.canaryStatus}
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                           <CheckCircle2 size={10} />
                           Healthy
                         </span>
@@ -1056,7 +1096,7 @@ export default function SreReleasesPage() {
               <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
                 <button
                   onClick={() => openRollbackModal(selectedRelease)}
-                  className="tap-pop flex items-center gap-1 px-3 py-1.5 rounded-xl border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold shadow-2xs"
+                  className="tap-pop flex items-center gap-1 px-3 py-1.5 rounded-xl border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:border-rose-900 dark:text-rose-300 dark:hover:bg-rose-950/70 text-xs font-semibold shadow-2xs"
                 >
                   <RotateCcw size={13} />
                   <span>Request Rollback</span>
@@ -1184,29 +1224,76 @@ export default function SreReleasesPage() {
                         <th className="p-2.5 font-medium">SRE Verdict</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[var(--divider)] font-mono">
-                      <tr>
-                        <td className="p-2.5 font-sans font-medium text-[var(--text-heading)]">p50 Latency</td>
-                        <td className="p-2.5">{selectedRelease.telemetryDiff.p50Before} ms</td>
-                        <td className="p-2.5 font-bold">{selectedRelease.telemetryDiff.p50After} ms</td>
-                        <td className="p-2.5 text-rose-600 font-bold">+100%</td>
-                        <td className="p-2.5 font-sans"><span className="px-1.5 py-0.5 rounded text-[10px] bg-rose-100 text-rose-800 font-bold">Degraded</span></td>
-                      </tr>
-                      <tr>
-                        <td className="p-2.5 font-sans font-medium text-[var(--text-heading)]">p95 Latency</td>
-                        <td className="p-2.5">{selectedRelease.telemetryDiff.p95Before} ms</td>
-                        <td className="p-2.5 font-bold text-rose-600">{selectedRelease.telemetryDiff.p95After} ms</td>
-                        <td className="p-2.5 text-rose-600 font-bold">+2658%</td>
-                        <td className="p-2.5 font-sans"><span className="px-1.5 py-0.5 rounded text-[10px] bg-rose-100 text-rose-800 font-bold">SLO Breach</span></td>
-                      </tr>
-                      <tr>
-                        <td className="p-2.5 font-sans font-medium text-[var(--text-heading)]">Error Rate</td>
-                        <td className="p-2.5">{selectedRelease.telemetryDiff.errorRateBefore}%</td>
-                        <td className="p-2.5 font-bold text-rose-600">{selectedRelease.telemetryDiff.errorRateAfter}%</td>
-                        <td className="p-2.5 text-rose-600 font-bold">+4.80%</td>
-                        <td className="p-2.5 font-sans"><span className="px-1.5 py-0.5 rounded text-[10px] bg-rose-100 text-rose-800 font-bold">Alert Fired</span></td>
-                      </tr>
-                    </tbody>
+                    {(() => {
+                      const diff = selectedRelease.telemetryDiff;
+                      const p50Delta = diff.p50Before > 0 ? Math.round(((diff.p50After - diff.p50Before) / diff.p50Before) * 100) : 0;
+                      const p95Delta = diff.p95Before > 0 ? Math.round(((diff.p95After - diff.p95Before) / diff.p95Before) * 100) : 0;
+                      const errDelta = +(diff.errorRateAfter - diff.errorRateBefore).toFixed(2);
+                      const p95Breached = p95Delta > 50 || diff.p95After > 1000;
+                      const errBreached = diff.errorRateAfter > 1.0 || errDelta > 0.5;
+
+                      return (
+                        <tbody className="divide-y divide-[var(--divider)] font-mono">
+                          <tr>
+                            <td className="p-2.5 font-sans font-medium text-[var(--text-heading)]">p50 Latency</td>
+                            <td className="p-2.5 text-[var(--text-muted)]">{diff.p50Before} ms</td>
+                            <td className={`p-2.5 font-bold ${p50Delta > 30 ? "text-rose-600 dark:text-rose-400" : "text-[var(--text-heading)]"}`}>{diff.p50After} ms</td>
+                            <td className={`p-2.5 font-bold ${p50Delta > 0 ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400"}`}>
+                              {p50Delta > 0 ? `+${p50Delta}%` : `${p50Delta}%`}
+                            </td>
+                            <td className="p-2.5 font-sans">
+                              {p50Delta > 30 ? (
+                                <span className="px-1.5 py-0.5 rounded text-[10px] bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-900 font-bold">
+                                  Degraded
+                                </span>
+                              ) : (
+                                <span className="px-1.5 py-0.5 rounded text-[10px] bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 font-bold">
+                                  Nominal
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="p-2.5 font-sans font-medium text-[var(--text-heading)]">p95 Latency</td>
+                            <td className="p-2.5 text-[var(--text-muted)]">{diff.p95Before} ms</td>
+                            <td className={`p-2.5 font-bold ${p95Breached ? "text-rose-600 dark:text-rose-400" : "text-[var(--text-heading)]"}`}>{diff.p95After} ms</td>
+                            <td className={`p-2.5 font-bold ${p95Delta > 0 ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400"}`}>
+                              {p95Delta > 0 ? `+${p95Delta}%` : `${p95Delta}%`}
+                            </td>
+                            <td className="p-2.5 font-sans">
+                              {p95Breached ? (
+                                <span className="px-1.5 py-0.5 rounded text-[10px] bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-900 font-bold">
+                                  SLO Breach
+                                </span>
+                              ) : (
+                                <span className="px-1.5 py-0.5 rounded text-[10px] bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 font-bold">
+                                  SLO Satisfied
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="p-2.5 font-sans font-medium text-[var(--text-heading)]">Error Rate</td>
+                            <td className="p-2.5 text-[var(--text-muted)]">{diff.errorRateBefore}%</td>
+                            <td className={`p-2.5 font-bold ${errBreached ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400"}`}>{diff.errorRateAfter}%</td>
+                            <td className={`p-2.5 font-bold ${errDelta > 0 ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400"}`}>
+                              {errDelta > 0 ? `+${errDelta}%` : `${errDelta}%`}
+                            </td>
+                            <td className="p-2.5 font-sans">
+                              {errBreached ? (
+                                <span className="px-1.5 py-0.5 rounded text-[10px] bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-900 font-bold">
+                                  Alert Fired
+                                </span>
+                              ) : (
+                                <span className="px-1.5 py-0.5 rounded text-[10px] bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 font-bold">
+                                  Nominal (0.00%)
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        </tbody>
+                      );
+                    })()}
                   </table>
                 </div>
               </div>
@@ -1214,27 +1301,54 @@ export default function SreReleasesPage() {
 
             {activeTab === "canary-pods" && (
               <div className="flex flex-col gap-4">
-                <div className="grid grid-cols-4 gap-2">
-                  <div className="p-2.5 rounded-xl border border-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800">
-                    <span className="text-[10px] font-bold block mb-1">Stage 1</span>
-                    <div className="font-bold text-xs">5% Internal</div>
-                    <span className="text-[10px]">Passed</span>
-                  </div>
-                  <div className="p-2.5 rounded-xl border border-rose-400 bg-rose-50 dark:bg-rose-950/40 text-rose-800">
-                    <span className="text-[10px] font-bold block mb-1">Stage 2</span>
-                    <div className="font-bold text-xs">25% Tenancy</div>
-                    <span className="text-[10px]">Alert Fired (4.82%)</span>
-                  </div>
-                  <div className="p-2.5 rounded-xl border border-[var(--divider)] bg-slate-50 opacity-50">
-                    <span className="text-[10px] font-bold block mb-1">Stage 3</span>
-                    <div className="font-bold text-xs">50% Regional</div>
-                    <span className="text-[10px]">Halted</span>
-                  </div>
-                  <div className="p-2.5 rounded-xl border border-[var(--divider)] bg-slate-50 opacity-50">
-                    <span className="text-[10px] font-bold block mb-1">Stage 4</span>
-                    <div className="font-bold text-xs">100% Global</div>
-                    <span className="text-[10px]">Blocked</span>
-                  </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                  {getCanaryStages(selectedRelease).map((stg) => {
+                    let cardStyles = "";
+                    let tagStyles = "";
+                    let weightStyles = "";
+                    let statusStyles = "";
+
+                    if (stg.variant === "passed") {
+                      cardStyles = "border-emerald-300 dark:border-emerald-800/80 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-100";
+                      tagStyles = "text-emerald-700 dark:text-emerald-400";
+                      weightStyles = "text-emerald-950 dark:text-emerald-100";
+                      statusStyles = "text-emerald-700 dark:text-emerald-300 font-semibold";
+                    } else if (stg.variant === "alert") {
+                      cardStyles = "border-rose-300 dark:border-rose-800/80 bg-rose-50 dark:bg-rose-950/40 text-rose-900 dark:text-rose-100 ring-1 ring-rose-400/40";
+                      tagStyles = "text-rose-700 dark:text-rose-400";
+                      weightStyles = "text-rose-950 dark:text-rose-100";
+                      statusStyles = "text-rose-700 dark:text-rose-300 font-bold";
+                    } else if (stg.variant === "active") {
+                      cardStyles = "border-purple-300 dark:border-purple-800/80 bg-purple-50 dark:bg-purple-950/40 text-purple-900 dark:text-purple-100 ring-1 ring-purple-400/40";
+                      tagStyles = "text-purple-700 dark:text-purple-400";
+                      weightStyles = "text-purple-950 dark:text-purple-100";
+                      statusStyles = "text-purple-700 dark:text-purple-300 font-semibold";
+                    } else if (stg.variant === "halted") {
+                      cardStyles = "border-amber-300/80 dark:border-amber-900/60 bg-amber-50/60 dark:bg-amber-950/30 text-amber-900 dark:text-amber-100";
+                      tagStyles = "text-amber-700 dark:text-amber-400";
+                      weightStyles = "text-amber-950 dark:text-amber-200";
+                      statusStyles = "text-amber-700 dark:text-amber-300 font-semibold";
+                    } else {
+                      cardStyles = "border-dashed border-[var(--divider)] bg-[var(--search-bg)]/60 dark:bg-slate-900/50 text-[var(--text-heading)]";
+                      tagStyles = "text-[var(--text-muted)]";
+                      weightStyles = "text-[var(--text-heading)]";
+                      statusStyles = "text-[var(--text-muted)] font-medium";
+                    }
+
+                    return (
+                      <div key={stg.stage} className={`p-2.5 rounded-xl border transition-all ${cardStyles}`}>
+                        <span className={`text-[10px] font-bold block mb-1 uppercase tracking-wider ${tagStyles}`}>
+                          {stg.stage}
+                        </span>
+                        <div className={`font-bold text-xs ${weightStyles}`}>
+                          {stg.weight}
+                        </div>
+                        <span className={`text-[10px] block mt-0.5 ${statusStyles}`}>
+                          {stg.status}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
 
                 <div className="p-3 rounded-xl border border-[var(--divider)] bg-[var(--surface)]">
@@ -1247,14 +1361,16 @@ export default function SreReleasesPage() {
                         key={pod.name}
                         className={`p-2.5 rounded-lg border text-xs ${
                           pod.status === "CrashLoopBackOff"
-                            ? "border-rose-300 bg-rose-50/50 text-rose-800"
+                            ? "border-rose-300 dark:border-rose-800 bg-rose-50/50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-200"
                             : "border-[var(--divider)] bg-[var(--surface)] text-[var(--text-heading)]"
                         }`}
                       >
                         <div className="flex items-center justify-between mb-1">
                           <span className="font-mono font-bold text-[11px] truncate">{pod.name}</span>
                           <span className={`px-1.5 py-0.2 rounded font-bold text-[10px] ${
-                            pod.status === "CrashLoopBackOff" ? "bg-rose-200 text-rose-800" : "bg-emerald-100 text-emerald-800"
+                            pod.status === "CrashLoopBackOff"
+                              ? "bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-900"
+                              : "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
                           }`}>
                             {pod.status}
                           </span>
@@ -1288,16 +1404,16 @@ export default function SreReleasesPage() {
             {activeTab === "correlated-incidents" && (
               <div className="flex flex-col gap-3">
                 {selectedRelease.correlatedIncident ? (
-                  <div className="p-4 rounded-xl border border-rose-300 bg-rose-50/40 text-xs">
+                  <div className="p-4 rounded-xl border border-rose-300 dark:border-rose-900 bg-rose-50/50 dark:bg-rose-950/30 text-xs">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="font-bold text-sm text-rose-800">
+                      <span className="font-bold text-sm text-rose-800 dark:text-rose-200">
                         {selectedRelease.correlatedIncident.id}: {selectedRelease.correlatedIncident.title}
                       </span>
                       <span className="px-2 py-0.5 rounded font-bold text-xs bg-rose-600 text-white">
                         {selectedRelease.correlatedIncident.severity}
                       </span>
                     </div>
-                    <p className="text-rose-700 mb-3">
+                    <p className="text-rose-700 dark:text-rose-300 mb-3">
                       Rule UC-06 matched because this release went live {selectedRelease.correlatedIncident.timeDelta} on {selectedRelease.service}, directly causing a 2658% latency spike.
                     </p>
                     <Link

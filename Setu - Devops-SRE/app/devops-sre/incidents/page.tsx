@@ -80,12 +80,12 @@ function statusPipelineColor(step: IncidentStatus, current: IncidentStatus) {
   const currentIdx = STATUS_PIPELINE.indexOf(current);
 
   if (step === current) {
-    return "bg-[var(--sidebar-active)] text-white shadow-xs font-bold ring-2 ring-[var(--sidebar-active)]/30";
+    return "bg-blue-600 text-white border border-blue-600 dark:bg-blue-950/90 dark:text-blue-200 dark:border-blue-500/80 font-bold shadow-xs ring-2 ring-blue-500/30";
   }
   if (stepIdx < currentIdx) {
-    return "bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 font-semibold";
+    return "bg-emerald-50 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 font-semibold";
   }
-  return "bg-slate-100 dark:bg-slate-800 text-[var(--text-muted)] hover:bg-slate-200 dark:hover:bg-slate-700";
+  return "bg-slate-100 dark:bg-slate-800/80 text-[var(--text-muted)] border border-transparent hover:bg-slate-200 dark:hover:bg-slate-700/80";
 }
 
 // SVG Error Rate Telemetry Line Chart
@@ -735,8 +735,12 @@ function SreIncidentsContent() {
                     >
                       <span className="text-[9px] opacity-70">{idx + 1}.</span>
                       <span>{step}</span>
-                      {isCurrent && <span className="ml-0.5 text-[8px] bg-[var(--surface)] text-[var(--icon-btn-navy)] px-1 rounded font-bold shadow-2xs">ACTIVE</span>}
-                      {isPast && <Check size={11} className="inline ml-0.5 text-emerald-600" />}
+                      {isCurrent && (
+                        <span className="ml-1 text-[8px] bg-white/20 text-white dark:bg-blue-500/25 dark:text-blue-200 border border-white/30 dark:border-blue-400/40 px-1.5 py-0.5 rounded font-extrabold tracking-wider">
+                          ACTIVE
+                        </span>
+                      )}
+                      {isPast && <Check size={11} className="inline ml-0.5 text-emerald-600 dark:text-emerald-400" />}
                     </button>
                   );
                 })}
@@ -968,7 +972,7 @@ function SreIncidentsContent() {
                     <button
                       type="submit"
                       disabled={!newNote.trim()}
-                      className="tap-pop px-3 py-1.5 rounded-lg bg-[var(--sidebar-active)] text-white font-bold disabled:opacity-50"
+                      className="tap-pop px-3 py-1.5 rounded-lg bg-[var(--accent-solid)] text-white font-bold disabled:opacity-50 hover:brightness-110 transition-all"
                     >
                       Append Note
                     </button>
@@ -986,7 +990,7 @@ function SreIncidentsContent() {
                       </div>
                       <button
                         onClick={() => showToast("Executed Runbook RB-WABA-FLUSH successfully")}
-                        className="tap-pop px-2.5 py-1 rounded bg-[var(--sidebar-active)] text-white text-[11px] font-bold"
+                        className="tap-pop px-2.5 py-1 rounded bg-[var(--accent-solid)] text-white text-[11px] font-bold hover:brightness-110 transition-all"
                       >
                         Execute
                       </button>

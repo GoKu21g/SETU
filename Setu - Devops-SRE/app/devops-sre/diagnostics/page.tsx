@@ -797,7 +797,7 @@ export default function SreDiagnosticsPage() {
 
                 <div className="overflow-x-auto rounded-xl border border-[var(--divider)]">
                   <table className="w-full text-left text-xs">
-                    <thead className="bg-slate-50 text-[11px] font-semibold text-[var(--text-muted)] border-b border-[var(--divider)]">
+                    <thead className="bg-slate-50 dark:bg-slate-900 text-[11px] font-semibold text-[var(--text-muted)] border-b border-[var(--divider)]">
                       <tr>
                         <th className="py-2.5 px-3">Status</th>
                         <th className="py-2.5 px-3">Assertion Rule</th>
@@ -807,26 +807,26 @@ export default function SreDiagnosticsPage() {
                     </thead>
                     <tbody className="divide-y divide-[var(--divider)] bg-[var(--surface)]">
                       {assertions.map((ast) => (
-                        <tr key={ast.id} className="hover:bg-slate-50/50">
+                        <tr key={ast.id} className="hover:bg-[var(--search-bg)]/50">
                           <td className="py-2 px-3 whitespace-nowrap">
                             {ast.passed ? (
-                              <span className="inline-flex items-center gap-1 text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded text-[10px]">
+                              <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-300 font-bold bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 rounded text-[10px]">
                                 <CheckCircle2 size={11} /> PASS
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-rose-700 font-bold bg-rose-50 px-2 py-0.5 rounded text-[10px]">
+                              <span className="inline-flex items-center gap-1 text-rose-700 dark:text-rose-300 font-bold bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-900 px-2 py-0.5 rounded text-[10px]">
                                 <AlertTriangle size={11} /> FAIL
                               </span>
                             )}
                           </td>
-                          <td className="py-2 px-3 font-semibold text-slate-800">
+                          <td className="py-2 px-3 font-semibold text-[var(--text-heading)]">
                             <div>{ast.name}</div>
-                            <div className="font-mono text-[10px] text-slate-500">{ast.condition}</div>
+                            <div className="font-mono text-[10px] text-[var(--text-muted)]">{ast.condition}</div>
                           </td>
-                          <td className="py-2 px-3 font-mono text-[11px] text-slate-600">
+                          <td className="py-2 px-3 font-mono text-[11px] text-[var(--text-muted)]">
                             {ast.expected}
                           </td>
-                          <td className={`py-2 px-3 font-mono text-[11px] font-bold ${ast.passed ? "text-emerald-700" : "text-rose-700"}`}>
+                          <td className={`py-2 px-3 font-mono text-[11px] font-bold ${ast.passed ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
                             {ast.actual}
                           </td>
                         </tr>
@@ -847,7 +847,7 @@ export default function SreDiagnosticsPage() {
 
                 <div className="overflow-x-auto rounded-xl border border-[var(--divider)]">
                   <table className="w-full text-left text-xs">
-                    <thead className="bg-slate-50 text-[11px] font-semibold text-[var(--text-muted)] border-b border-[var(--divider)]">
+                    <thead className="bg-slate-50 dark:bg-slate-900 text-[11px] font-semibold text-[var(--text-muted)] border-b border-[var(--divider)]">
                       <tr>
                         <th className="py-2.5 px-3">Time</th>
                         <th className="py-2.5 px-3">Result</th>
@@ -858,16 +858,16 @@ export default function SreDiagnosticsPage() {
                     </thead>
                     <tbody className="divide-y divide-[var(--divider)] bg-[var(--surface)]">
                       {runHistory.map((item, idx) => (
-                        <tr key={idx} className="hover:bg-slate-50/50">
-                          <td className="py-2 px-3 whitespace-nowrap text-slate-700 font-medium">{item.time}</td>
+                        <tr key={idx} className="hover:bg-[var(--search-bg)]/50">
+                          <td className="py-2 px-3 whitespace-nowrap text-[var(--text-heading)] font-medium">{item.time}</td>
                           <td className="py-2 px-3 whitespace-nowrap">
                             <span className={`inline-flex items-center gap-1 rounded px-2 py-0.5 text-[10px] font-bold ${statusPillClass(item.status)}`}>
                               {item.status.toUpperCase()}
                             </span>
                           </td>
-                          <td className="py-2 px-3 font-mono text-[11px] text-slate-700">{item.duration}</td>
-                          <td className="py-2 px-3 text-slate-600">{item.trigger}</td>
-                          <td className="py-2 px-3 font-mono text-[10.5px] text-slate-400">{item.hash}</td>
+                          <td className="py-2 px-3 font-mono text-[11px] text-[var(--text-heading)]">{item.duration}</td>
+                          <td className="py-2 px-3 text-[var(--text-muted)]">{item.trigger}</td>
+                          <td className="py-2 px-3 font-mono text-[10.5px] text-[var(--text-muted)]">{item.hash}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -988,16 +988,16 @@ export default function SreDiagnosticsPage() {
 
             <div className="space-y-3.5 my-4 text-xs">
               <div>
-                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                <label className="block text-[11px] font-semibold text-[var(--text-heading)] mb-1">
                   Probe Selection
                 </label>
                 <select
                   value={selectedProbeId}
                   onChange={(e) => setSelectedProbeId(e.target.value)}
-                  className="w-full rounded-xl border border-[var(--divider)] bg-slate-50 p-2 text-xs font-semibold text-slate-800 focus:outline-none"
+                  className="w-full rounded-xl border border-[var(--divider)] bg-[var(--search-bg)] p-2 text-xs font-semibold text-[var(--text-heading)] focus:outline-none"
                 >
                   {sreDiagnosticProbes.map((p) => (
-                    <option key={p.id} value={p.id}>
+                    <option key={p.id} value={p.id} className="bg-[var(--surface)] text-[var(--text-heading)]">
                       [{p.id}] {p.name}
                     </option>
                   ))}
@@ -1005,17 +1005,17 @@ export default function SreDiagnosticsPage() {
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                <label className="block text-[11px] font-semibold text-[var(--text-heading)] mb-1">
                   Target Scope
                 </label>
-                <div className="p-2.5 rounded-xl bg-slate-50 border border-[var(--divider)] font-semibold text-slate-800">
+                <div className="p-2.5 rounded-xl bg-[var(--search-bg)] border border-[var(--divider)] font-semibold text-[var(--text-heading)]">
                   {selectedProbe.targetScope}
                 </div>
               </div>
 
               <div className="flex items-center gap-2 pt-1">
-                <input type="checkbox" id="verboseLogs" defaultChecked className="rounded border-slate-300" />
-                <label htmlFor="verboseLogs" className="text-slate-700 font-medium">
+                <input type="checkbox" id="verboseLogs" defaultChecked className="rounded border-[var(--divider)]" />
+                <label htmlFor="verboseLogs" className="text-[var(--text-heading)] font-medium">
                   Stream verbose telemetry to Live Console
                 </label>
               </div>
@@ -1025,7 +1025,7 @@ export default function SreDiagnosticsPage() {
               <button
                 type="button"
                 onClick={() => setShowRunModal(false)}
-                className="tap-pop rounded-xl border border-[var(--divider)] px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+                className="tap-pop rounded-xl border border-[var(--divider)] px-3.5 py-1.5 text-xs font-semibold text-[var(--text-heading)] hover:bg-[var(--search-bg)]"
               >
                 Cancel
               </button>
