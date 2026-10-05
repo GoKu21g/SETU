@@ -28,3 +28,7 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+# ===== TypeScript Build =====
+*.tsbuildinfo
+scratch/

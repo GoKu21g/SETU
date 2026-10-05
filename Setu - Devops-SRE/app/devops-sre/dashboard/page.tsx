@@ -29,6 +29,7 @@ import type { StatusLevel } from "@/components/shared/StatusBadge";
 import DrillLink from "@/components/shared/DrillLink";
 import DonutChart from "@/components/shared/charts/DonutChart";
 import AreaTrendChart from "@/components/shared/charts/AreaTrendChart";
+import { useEventRefresh } from "@/lib/hooks/use-event-refresh";
 import {
   sreKpiData,
   sreFailureCategories,
@@ -42,28 +43,7 @@ import {
   type CriticalServiceSlo,
 } from "@/lib/mock-data/devops-sre";
 
-const REFRESH_MS = 60_000;
-const FAILURE_RATE = 0.15;
 
-function useKpiSnapshot() {
-  const [updatedAt, setUpdatedAt] = useState<Date>(() => new Date());
-  const [stale, setStale] = useState(false);
-
-  useEffect(() => {
-    const id = setInterval(() => {
-      const failed = Math.random() < FAILURE_RATE;
-      if (failed) {
-        setStale(true);
-        return;
-      }
-      setUpdatedAt(new Date());
-      setStale(false);
-    }, REFRESH_MS);
-    return () => clearInterval(id);
-  }, []);
-
-  return { updatedAt, stale };
-}
 
 const TREND_RANGE_OPTIONS: { label: string; value: TrendRangeDays }[] = [
   { label: "7D", value: 7 },
@@ -73,7 +53,7 @@ const TREND_RANGE_OPTIONS: { label: string; value: TrendRangeDays }[] = [
 
 export default function SreControlRoomPage() {
   const router = useRouter();
-  const { updatedAt, stale } = useKpiSnapshot();
+  const { updatedAt, stale } = useEventRefresh();
   const [trendRange, setTrendRange] = useState<TrendRangeDays>(30);
   const telemetryTrend = useMemo(() => buildSreTelemetryTrend(trendRange), [trendRange]);
 
@@ -112,11 +92,10 @@ export default function SreControlRoomPage() {
       header: "Severity",
       render: (r) => (
         <span
-          className={`font-mono-id text-xs font-bold px-2 py-0.5 rounded-full ${
-            r.severity === "P1-Critical"
+          className={`font-mono-id text-xs font-bold px-2 py-0.5 rounded-full ${r.severity === "P1-Critical"
               ? "bg-red-100 text-red-800"
               : "bg-amber-100 text-amber-800"
-          }`}
+            }`}
         >
           {r.severity}
         </span>
@@ -177,7 +156,7 @@ export default function SreControlRoomPage() {
   return (
     <div className="flex flex-col gap-[var(--space-lg)]">
       {/* 1. Row 1: KPI Grid (Greeting + 7 KPIs) + CalendarCard */}
-      <div className="grid grid-cols-1 items-stretch gap-[var(--space-md)] screen-xl:grid-cols-[minmax(0,3fr)_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 items-stretch gap-[var(--space-md)] screen-xl:grid-cols-[minmax(0,4.2fr)_minmax(0,1fr)]">
         <div className="grid min-w-0 grid-cols-2 gap-[var(--space-md)] screen-sm:grid-cols-4">
           <div className="min-w-0">
             <GreetingCard name="Arjun Mehta" />
@@ -193,8 +172,8 @@ export default function SreControlRoomPage() {
               updatedAt={updatedAt}
               stale={stale}
               icon={<HeartPulse size={22} />}
-              iconBg="#EFF6FF"
-              iconFg="#0058DD"
+              iconBg="var(--status-blue-bg)"
+              iconFg="var(--status-blue-fg)"
               trendDirection="up"
               trendValue="18/18 Nom"
             />
@@ -210,8 +189,8 @@ export default function SreControlRoomPage() {
               updatedAt={updatedAt}
               stale={stale}
               icon={<AlertTriangle size={22} />}
-              iconBg="#FEE2E2"
-              iconFg="#DC2626"
+              iconBg="var(--status-critical-bg)"
+              iconFg="var(--status-critical-fg)"
               secondary={[
                 { label: "P1 Critical", value: sreKpiData.activeIncidents.p1, color: "var(--status-critical-fg)" },
                 { label: "P2 High", value: sreKpiData.activeIncidents.p2, color: "var(--status-warning-fg)" },
@@ -229,8 +208,8 @@ export default function SreControlRoomPage() {
               updatedAt={updatedAt}
               stale={stale}
               icon={<Zap size={22} />}
-              iconBg="#ECFDF5"
-              iconFg="#059669"
+              iconBg="var(--status-healthy-bg)"
+              iconFg="var(--status-healthy-fg)"
               trendDirection="down"
               trendValue={sreKpiData.mtta.delta}
             />
@@ -246,8 +225,8 @@ export default function SreControlRoomPage() {
               updatedAt={updatedAt}
               stale={stale}
               icon={<Clock size={22} />}
-              iconBg="#CCFBF1"
-              iconFg="#0D9488"
+              iconBg="var(--status-cyan-bg)"
+              iconFg="var(--status-cyan-fg)"
               trendDirection="down"
               trendValue={sreKpiData.mttr.delta}
             />
@@ -263,8 +242,8 @@ export default function SreControlRoomPage() {
               updatedAt={updatedAt}
               stale={stale}
               icon={<Rocket size={22} />}
-              iconBg="#EDE9FE"
-              iconFg="#7C3AED"
+              iconBg="var(--status-purple-bg)"
+              iconFg="var(--status-purple-fg)"
               secondary={[
                 { label: "Correlated", value: sreKpiData.deploymentsLast48h.incidentCorrelatedCount, color: "var(--status-critical-fg)" },
                 { label: "Pipeline", value: "ArgoCD", color: "var(--status-info-fg)" },
@@ -282,8 +261,8 @@ export default function SreControlRoomPage() {
               updatedAt={updatedAt}
               stale={stale}
               icon={<Flame size={22} />}
-              iconBg="#FEF2F2"
-              iconFg="#DC2626"
+              iconBg="var(--status-critical-bg)"
+              iconFg="var(--status-critical-fg)"
               secondary={[
                 { label: "At Risk", value: sreKpiData.sloErrorBudget.atRiskCount, color: "var(--status-warning-fg)" },
                 { label: "Healthy", value: sreKpiData.sloErrorBudget.healthyCount, color: "var(--status-healthy-fg)" },
@@ -301,8 +280,8 @@ export default function SreControlRoomPage() {
               updatedAt={updatedAt}
               stale={stale}
               icon={<Terminal size={22} />}
-              iconBg="#CFFAFE"
-              iconFg="#0891B2"
+              iconBg="var(--status-cyan-bg)"
+              iconFg="var(--status-cyan-fg)"
               trendDirection="up"
               trendValue="Fleet Mode"
             />
@@ -383,11 +362,10 @@ export default function SreControlRoomPage() {
                   type="button"
                   onClick={() => setTrendRange(opt.value)}
                   aria-pressed={trendRange === opt.value}
-                  className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
-                    trendRange === opt.value
-                      ? "bg-white text-[var(--text-heading)] shadow-sm font-semibold"
+                  className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${trendRange === opt.value
+                      ? "bg-[var(--surface)] text-[var(--text-heading)] shadow-sm font-semibold"
                       : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
-                  }`}
+                    }`}
                 >
                   {opt.label}
                 </button>
@@ -460,7 +438,7 @@ export default function SreControlRoomPage() {
               <DrillLink
                 key={svc.id}
                 href={`/devops-sre/health?service=${svc.id}`}
-                className="card-interactive tap-pop group relative flex min-w-0 grow basis-full items-center gap-2.5 rounded-[var(--card-radius)] border border-[var(--divider)] bg-white p-[var(--card-pad)] screen-sm:basis-[calc((100%-var(--space-sm))/2)] screen-lg:basis-[calc((100%-(var(--space-sm)*2))/3)]"
+                className="card-interactive tap-pop group relative flex min-w-0 grow basis-full items-center gap-2.5 rounded-[var(--card-radius)] border border-[var(--divider)] bg-[var(--surface)] p-[var(--card-pad)] screen-sm:basis-[calc((100%-var(--space-sm))/2)] screen-lg:basis-[calc((100%-(var(--space-sm)*2))/3)]"
                 style={{ boxShadow: "var(--card-shadow)" }}
               >
                 <span
@@ -535,11 +513,10 @@ export default function SreControlRoomPage() {
             {sreReleases.map((rel) => (
               <div
                 key={rel.id}
-                className={`rounded-xl border p-3 transition-colors ${
-                  rel.status === "Correlated to Incident"
-                    ? "border-red-300 bg-red-50/70"
-                    : "border-[var(--divider)] bg-white hover:bg-[var(--search-bg)]"
-                }`}
+                className={`rounded-xl border p-3 transition-colors ${rel.status === "Correlated to Incident"
+                    ? "border-red-300 bg-red-50/70 dark:bg-red-950/40 dark:border-red-800"
+                    : "border-[var(--divider)] bg-[var(--surface)] hover:bg-[var(--search-bg)]"
+                  }`}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">

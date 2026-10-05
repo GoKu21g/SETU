@@ -19,13 +19,15 @@ const DOT: Record<StatusLevel, string> = {
 export default function StatusBadge({
   status,
   label,
+  className,
 }: {
   status: StatusLevel;
   label: string;
+  className?: string;
 }) {
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${STYLES[status]}`}
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium whitespace-nowrap shrink-0 ${STYLES[status]} ${className ?? ""}`}
     >
       <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${DOT[status]}`} />
       {label}

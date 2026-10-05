@@ -29,6 +29,8 @@ import type { StatusLevel } from "@/components/shared/StatusBadge";
 import DrillLink from "@/components/shared/DrillLink";
 import DonutChart from "@/components/shared/charts/DonutChart";
 import AreaTrendChart from "@/components/shared/charts/AreaTrendChart";
+import { useEventRefresh } from "@/lib/hooks/use-event-refresh";
+import { triggerRefresh } from "@/lib/events/refresh";
 import {
   technicalSupportKpis,
   rootCausesData,
@@ -44,28 +46,7 @@ import {
   type ServiceRadarTile,
 } from "@/lib/mock-data/technical-support";
 
-const REFRESH_MS = 60_000;
-const FAILURE_RATE = 0.2;
 
-function useKpiSnapshot() {
-  const [updatedAt, setUpdatedAt] = useState<Date>(() => new Date());
-  const [stale, setStale] = useState(false);
-
-  useEffect(() => {
-    const id = setInterval(() => {
-      const failed = Math.random() < FAILURE_RATE;
-      if (failed) {
-        setStale(true);
-        return;
-      }
-      setUpdatedAt(new Date());
-      setStale(false);
-    }, REFRESH_MS);
-    return () => clearInterval(id);
-  }, []);
-
-  return { updatedAt, stale };
-}
 
 const TREND_RANGE_OPTIONS: { label: string; value: TrendRangeDays }[] = [
   { label: "7D", value: 7 },
@@ -117,7 +98,7 @@ function ServiceIcon({ id }: { id: string }) {
 
 export default function TechnicalSupportDashboardPage() {
   const router = useRouter();
-  const { updatedAt, stale } = useKpiSnapshot();
+  const { updatedAt, stale } = useEventRefresh();
   const [trendRange, setTrendRange] = useState<TrendRangeDays>(30);
   const telemetryTrend = useMemo(() => buildTelemetryTrend(trendRange), [trendRange]);
   const telemetryStats = useMemo(() => getTelemetryStats(trendRange), [trendRange]);
@@ -176,21 +157,24 @@ export default function TechnicalSupportDashboardPage() {
           <button
             type="button"
             onClick={() => router.push(`/technical-support/workspaces?id=${r.id}`)}
-            className="tap-pop rounded-lg border border-[var(--divider)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[var(--icon-btn-navy)] shadow-2xs hover:bg-[var(--search-bg)]"
+            className="tap-pop rounded-lg border border-[var(--divider)] bg-[var(--surface)] px-2.5 py-1 text-[11px] font-semibold text-[var(--icon-btn-navy)] shadow-2xs hover:bg-[var(--search-bg)]"
           >
             Workspace 360
           </button>
           <button
             type="button"
             onClick={() => router.push(`/technical-support/api-logs?ws=${r.id}`)}
-            className="tap-pop rounded-lg border border-[var(--divider)] bg-white px-2 py-1 text-[11px] font-medium text-[var(--role-text)] shadow-2xs hover:bg-[var(--search-bg)]"
+            className="tap-pop rounded-lg border border-[var(--divider)] bg-[var(--surface)] px-2 py-1 text-[11px] font-medium text-[var(--role-text)] shadow-2xs hover:bg-[var(--search-bg)]"
           >
             Logs
           </button>
           <button
             type="button"
-            onClick={() => router.push(`/technical-support/diagnostics?target=${r.id}`)}
-            className="tap-pop rounded-lg bg-[var(--icon-btn-navy)] px-2 py-1 text-[11px] font-semibold text-white shadow-2xs hover:bg-slate-800"
+            onClick={() => {
+              triggerRefresh({ source: `probe-${r.id}` });
+              router.push(`/technical-support/diagnostics?target=${r.id}`);
+            }}
+            className="tap-pop rounded-lg bg-[var(--accent-solid)] px-2 py-1 text-[11px] font-semibold text-white shadow-2xs hover:brightness-110"
           >
             <Play size={10} className="inline mr-1" />
             Ping
@@ -203,7 +187,7 @@ export default function TechnicalSupportDashboardPage() {
   return (
     <div className="flex flex-col gap-[var(--space-lg)]">
       {/* 1. Row 1: 8-item KPI Tile Grid (Greeting + 7 KPIs) + Calendar Card */}
-      <div className="grid grid-cols-1 items-stretch gap-[var(--space-md)] screen-xl:grid-cols-[minmax(0,3fr)_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 items-stretch gap-[var(--space-md)] screen-xl:grid-cols-[minmax(0,4.2fr)_minmax(0,1fr)]">
         <div className="grid min-w-0 grid-cols-2 gap-[var(--space-md)] screen-sm:grid-cols-4">
           <div className="min-w-0">
             <GreetingCard name="Dhruv Singla" />
@@ -213,14 +197,15 @@ export default function TechnicalSupportDashboardPage() {
             <KPITile
               title="Platform status"
               value="99.98%"
+              valueColor="var(--kpi-good)"
               note="18/18 active endpoints"
               status="healthy"
               drillHref="/technical-support/health"
               updatedAt={updatedAt}
               stale={stale}
               icon={<HeartPulse size={22} />}
-              iconBg="#EFF6FF"
-              iconFg="#0058DD"
+              iconBg="var(--status-healthy-bg)"
+              iconFg="var(--status-healthy-fg)"
               trendDirection="up"
               trendValue="+0.02%"
             />
@@ -230,14 +215,15 @@ export default function TechnicalSupportDashboardPage() {
             <KPITile
               title="Monitored workspaces"
               value="5"
+              valueColor="var(--status-purple-fg)"
               note="Tier-2 high priority fleet"
-              status="healthy"
+              status="info"
               drillHref="/technical-support/workspaces"
               updatedAt={updatedAt}
               stale={stale}
               icon={<Layers size={22} />}
-              iconBg="#F5F3FF"
-              iconFg="#7C3AED"
+              iconBg="var(--status-purple-bg)"
+              iconFg="var(--status-purple-fg)"
               secondary={[
                 { label: "Healthy", value: 3, color: "var(--status-healthy-fg)" },
                 { label: "Degraded", value: 1, color: "var(--status-critical-fg)" },
@@ -249,14 +235,15 @@ export default function TechnicalSupportDashboardPage() {
             <KPITile
               title="Active alert queue"
               value="2"
+              valueColor="var(--kpi-warn)"
               note="unaddressed anomalies"
               status="warning"
               drillHref="/technical-support/incidents"
               updatedAt={updatedAt}
               stale={stale}
               icon={<AlertTriangle size={22} />}
-              iconBg="#FEE2E2"
-              iconFg="#DC2626"
+              iconBg="var(--status-warning-bg)"
+              iconFg="var(--status-warning-fg)"
               secondary={[
                 { label: "P1 Blocker", value: 1, color: "var(--status-critical-fg)" },
                 { label: "P2 Degraded", value: 1, color: "var(--status-warning-fg)" },
@@ -268,14 +255,15 @@ export default function TechnicalSupportDashboardPage() {
             <KPITile
               title="Diagnostics run"
               value="142"
+              valueColor="var(--status-cyan-fg)"
               note="avg latency 4.2ms"
-              status="healthy"
+              status="info"
               drillHref="/technical-support/diagnostics"
               updatedAt={updatedAt}
               stale={stale}
               icon={<Terminal size={22} />}
-              iconBg="#ECFDF5"
-              iconFg="#059669"
+              iconBg="var(--status-cyan-bg)"
+              iconFg="var(--status-cyan-fg)"
               trendDirection="up"
               trendValue="+18%"
             />
@@ -285,14 +273,15 @@ export default function TechnicalSupportDashboardPage() {
             <KPITile
               title="Webhook delivery"
               value="99.94%"
+              valueColor="var(--status-blue-fg)"
               note="p95 latency 142ms"
-              status="healthy"
+              status="info"
               drillHref="/technical-support/integrations"
               updatedAt={updatedAt}
               stale={stale}
               icon={<Network size={22} />}
-              iconBg="#CCFBF1"
-              iconFg="#0D9488"
+              iconBg="var(--status-blue-bg)"
+              iconFg="var(--status-blue-fg)"
               trendDirection="up"
               trendValue="99.9% SLA"
             />
@@ -302,14 +291,15 @@ export default function TechnicalSupportDashboardPage() {
             <KPITile
               title="API error rate"
               value="0.02%"
+              valueColor="var(--status-indigo-fg)"
               note="4xx/5xx across fleet"
-              status="healthy"
+              status="info"
               drillHref="/technical-support/api-logs"
               updatedAt={updatedAt}
               stale={stale}
               icon={<Activity size={22} />}
-              iconBg="#CFFAFE"
-              iconFg="#0891B2"
+              iconBg="var(--status-indigo-bg)"
+              iconFg="var(--status-indigo-fg)"
               trendDirection="down"
               trendValue="-0.01%"
             />
@@ -319,14 +309,15 @@ export default function TechnicalSupportDashboardPage() {
             <KPITile
               title="Critical exceptions"
               value="1"
+              valueColor="var(--kpi-bad)"
               note="Meta WABA OAuth token"
               status="critical"
               drillHref="/technical-support/incidents"
               updatedAt={updatedAt}
               stale={stale}
               icon={<AlertOctagon size={22} />}
-              iconBg="#FEE2E2"
-              iconFg="#DC2626"
+              iconBg="var(--status-critical-bg)"
+              iconFg="var(--status-critical-fg)"
               secondary={[
                 { label: "Blast radius", value: "1 workspace", color: "var(--status-critical-fg)" },
                 { label: "Severity", value: "P2 High", color: "var(--status-warning-fg)" },
@@ -348,7 +339,7 @@ export default function TechnicalSupportDashboardPage() {
           className="min-h-[clamp(11rem,28vh,22rem)]"
         >
           <div className="flex flex-col items-center gap-[var(--space-md)] screen-sm:flex-row screen-sm:items-center">
-            <div className="flex w-full justify-center screen-sm:w-auto screen-sm:flex-1">
+            <div className="flex justify-center shrink-0 px-1">
               <DonutChart
                 data={rootCausesData}
                 size={112}
@@ -357,21 +348,21 @@ export default function TechnicalSupportDashboardPage() {
               />
             </div>
 
-            <ul className="flex w-full flex-col gap-2.5 screen-sm:flex-1">
+            <ul className="flex w-full flex-col gap-2 min-w-0 flex-1">
               {rootCausesData.map((rc) => {
                 const pct = Math.round((rc.value / 142) * 100);
                 const status: StatusLevel = rc.value > 40 ? "critical" : rc.value > 20 ? "warning" : "healthy";
                 const bandWord = rc.value > 40 ? "Critical" : rc.value > 20 ? "Needs attention" : "Normal";
                 return (
                   <li key={rc.label} className="flex items-center justify-between gap-2 text-sm">
-                    <span className="flex items-center gap-2 text-[var(--role-text)]">
+                    <span className="flex items-center gap-2 min-w-0">
                       <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: rc.color }} />
-                      <span className="text-xs font-medium text-[var(--text-heading)]">{rc.label}</span>
-                      <span className="text-xs text-[var(--text-muted)]">({rc.value}/142)</span>
+                      <span className="text-xs font-medium text-[var(--text-heading)] truncate">{rc.label}</span>
+                      <span className="text-xs text-[var(--text-muted)] shrink-0">({rc.value}/142)</span>
                     </span>
-                    <span className="flex items-center gap-2">
-                      <span className="font-semibold text-[var(--text-secondary)]">{pct}%</span>
-                      <StatusBadge status={status} label={bandWord} />
+                    <span className="flex items-center gap-2 shrink-0">
+                      <span className="text-xs font-semibold text-[var(--text-secondary)] w-7 text-right">{pct}%</span>
+                      <StatusBadge status={status} label={bandWord} className="text-[11px] px-2 py-0.5" />
                     </span>
                   </li>
                 );
@@ -382,11 +373,11 @@ export default function TechnicalSupportDashboardPage() {
           <div className="mt-[var(--space-md)] border-t border-[var(--divider)] pt-[var(--space-md)]">
             <h3 className="mb-[var(--space-sm)] text-sm font-semibold text-[var(--text-heading)]">Top active blockers</h3>
             <ul className="flex flex-col gap-[var(--space-sm)]">
-              {topBlockers.map((blocker) => (
+              {topBlockers.slice(0, 1).map((blocker) => (
                 <li key={blocker.id} className="flex items-start justify-between gap-2">
                   <div>
-                    <p className="text-sm font-medium text-[var(--text-secondary)]">{blocker.label}</p>
-                    <p className="text-xs text-[var(--role-text)]">{blocker.workspace} · {blocker.impact}</p>
+                    <p className="text-sm font-medium text-[var(--text-secondary)] truncate">{blocker.label}</p>
+                    <p className="text-xs text-[var(--role-text)] truncate">{blocker.workspace} · {blocker.impact}</p>
                   </div>
                   <StatusBadge
                     status={blocker.severity}
@@ -412,7 +403,7 @@ export default function TechnicalSupportDashboardPage() {
                   aria-pressed={trendRange === opt.value}
                   className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
                     trendRange === opt.value
-                      ? "bg-white text-[var(--text-heading)] shadow-sm font-semibold"
+                      ? "bg-[var(--surface)] text-[var(--text-heading)] shadow-sm font-semibold"
                       : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
                   }`}
                 >
@@ -482,7 +473,7 @@ export default function TechnicalSupportDashboardPage() {
               <DrillLink
                 key={area.id}
                 href={area.href}
-                className="card-interactive tap-pop group relative flex min-w-0 grow basis-full items-center gap-2.5 rounded-[var(--card-radius)] border border-[var(--divider)] bg-white p-[var(--card-pad)] screen-sm:basis-[calc((100%-var(--space-sm))/2)] screen-lg:basis-[calc((100%-(var(--space-sm)*2))/3)]"
+                className="card-interactive tap-pop group relative flex min-w-0 grow basis-full items-center gap-2.5 rounded-[var(--card-radius)] border border-[var(--divider)] bg-[var(--surface)] p-[var(--card-pad)] screen-sm:basis-[calc((100%-var(--space-sm))/2)] screen-lg:basis-[calc((100%-(var(--space-sm)*2))/3)]"
                 style={{ boxShadow: "var(--card-shadow)" }}
               >
                 <span
@@ -517,7 +508,7 @@ export default function TechnicalSupportDashboardPage() {
         description="Live API success rate, last executed diagnostic probe, and progressive tenant status"
         action={
           <div className="flex items-center gap-2">
-            <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-[var(--role-text)]">
+            <span className="rounded-full bg-[var(--surface-muted)] px-2.5 py-1 text-xs font-medium text-[var(--role-text)]">
               {customerWorkspaces.length} Monitored
             </span>
           </div>
@@ -542,7 +533,7 @@ export default function TechnicalSupportDashboardPage() {
             <button
               type="button"
               onClick={() => router.push("/technical-support/incidents")}
-              className="text-xs font-semibold text-red-600 hover:underline"
+              className="text-xs font-semibold text-[var(--status-critical-fg)] hover:underline"
             >
               Incident Command &rarr;
             </button>
@@ -552,10 +543,10 @@ export default function TechnicalSupportDashboardPage() {
             {platformIncidents.map((inc) => (
               <div
                 key={inc.id}
-                className="flex flex-col gap-2 rounded-xl border border-red-200/80 bg-red-50/40 p-3.5"
+                className="flex flex-col gap-2 rounded-xl border border-[var(--status-critical-fg)]/20 bg-[var(--status-critical-bg)]/20 p-3.5"
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-mono-id text-xs font-bold text-red-700">
+                  <span className="font-mono-id text-xs font-bold text-[var(--status-critical-fg)]">
                     {inc.id} · {inc.severity}
                   </span>
                   <StatusBadge status={inc.statusLevel} label={inc.status} />
@@ -570,7 +561,7 @@ export default function TechnicalSupportDashboardPage() {
                   <span>·</span>
                   <span>{inc.firstSeen}</span>
                 </div>
-                <div className="mt-1 rounded-lg bg-white/80 border border-red-100 p-2 text-[11px] text-slate-700 leading-relaxed">
+                <div className="mt-1 rounded-lg bg-[var(--surface)]/80 border border-[var(--divider)] p-2 text-[11px] text-[var(--text-secondary)] leading-relaxed">
                   <strong>Support Guidance:</strong> {inc.supportGuidance}
                 </div>
               </div>
@@ -612,7 +603,7 @@ export default function TechnicalSupportDashboardPage() {
                 </div>
 
                 <div className="flex items-center gap-3 shrink-0 ml-2">
-                  <span className="font-mono-id text-[11px] text-slate-400">
+                  <span className="font-mono-id text-[11px] text-[var(--text-muted)]">
                     {log.durationMs}ms
                   </span>
                   <StatusBadge

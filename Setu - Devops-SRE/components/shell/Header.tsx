@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Search, Plus, Bell, ExternalLink, History, Settings } from "lucide-react";
 import { personaConfigFromPathname } from "@/lib/personas";
 import AppsLauncher from "@/components/shell/AppsLauncher";
+import ThemeToggle from "@/components/shell/ThemeToggle";
 
 const SRE_NOTIFICATIONS = [
   {
@@ -63,12 +65,32 @@ export default function Header() {
         />
       )}
 
-      {/* Search — centered on viewport */}
-      <div className="pointer-events-none fixed left-1/2 top-0 z-20 flex h-[var(--header-h)] w-[min(30rem,90vw)] -translate-x-1/2 items-center px-1 screen-sm:px-2">
+      {/* Logo — Sidebar's own logo only renders at screen-sm+ (it becomes a bottom tab
+          bar below that, with no room for branding), so the header picks it up here
+          for phones/small tablets. Hidden again once Sidebar's logo takes over. */}
+      <Link
+        href={`${persona.routeBase}/dashboard`}
+        aria-label="Go to dashboard"
+        className="flex shrink-0 items-center screen-sm:hidden"
+      >
+        <Image src="/logo.svg" alt="Setu" width={63} height={77} className="h-[1.75rem] w-[1.4rem] dark:hidden" priority />
+        <Image
+          src="/logo-dark.svg"
+          alt="Setu"
+          width={63}
+          height={77}
+          className="hidden h-[1.75rem] w-[1.4rem] dark:block"
+          priority
+        />
+      </Link>
+
+      {/* Search — a normal flex item (not position:fixed), so it can never paint over
+          the icon cluster on the right. min-w-0 lets it shrink on narrow/foldable
+          screens instead of overlapping anything; max-w caps it on wide screens. */}
+      <div className="flex min-w-0 flex-1 items-center justify-center px-1 screen-sm:px-2">
         <div
           className="
-            pointer-events-auto
-            flex h-[3.125rem] w-full
+            flex h-11 w-full min-w-0
             max-w-[30rem]
             items-center
             gap-2
@@ -78,11 +100,12 @@ export default function Header() {
             bg-[var(--search-bg)]
             px-3
 
+            screen-sm:h-[3.125rem]
             screen-sm:border-[var(--divider)]
           "
         >
           <span className="shrink-0">
-            <Search size={20} className="shrink-0" color="#9CA3AF" />
+            <Search size={20} className="shrink-0" color="var(--search-placeholder)" />
           </span>
 
           <input
@@ -99,48 +122,31 @@ export default function Header() {
               screen-sm:text-sm
             "
           />
-
-
         </div>
       </div>
 
-      {/* Right side actions */}
+      {/* Right side actions — h-full so this row's bottom edge matches the header's bottom edge,
+          which dropdown tops (top-[calc(100%+var(--page-pad-y))]) key off to align with where
+          the dashboard content (e.g. KPI tiles) starts below the header. */}
       <div className="relative ml-auto flex h-full shrink-0 items-center gap-1.5 screen-sm:gap-2">
-        {/* Declare Incident / Action */}
-        <Link
-          href={`${persona.routeBase}/incidents`}
-          title="Incident Command"
-          className="
-            tap-pop
-            flex
-            h-[2.5rem]
-            items-center
-            gap-1.5
-            rounded-lg
-            border
-            border-red-200
-            bg-red-50/80
-            px-2.5
-            text-xs
-            font-semibold
-            text-red-700
-            transition-colors
-            hover:bg-red-100
-          "
+        {/* Create */}
+        <IconButton
+          label="Create"
+          bg="transparent"
         >
-          <span className="h-2 w-2 rounded-full bg-red-600 animate-pulse" />
-          <span className="hidden screen-sm:inline">Incidents</span>
-        </Link>
+          <Plus color="var(--text-secondary)" size={20} />
+        </IconButton>
 
         {/* Notifications */}
         <div className="flex h-full items-center">
           <IconButton
-            label="SRE Notifications"
+            label="Notifications"
             bg="transparent"
             onClick={() => toggle("notifications")}
           >
             <span className="relative">
-              <Bell color="#4A5565" size={20} />
+              <Bell color="var(--text-secondary)" size={20} />
+
               <span
                 className="
                   absolute
@@ -164,51 +170,111 @@ export default function Header() {
                 top-[calc(100%+var(--page-pad-y))]
                 z-50
                 flex
-                w-[22rem]
+                w-[21rem]
                 max-w-[calc(100vw-1.5rem)]
                 flex-col
                 overflow-hidden
                 rounded-xl
                 border
                 border-[var(--divider)]
-                bg-white
+                bg-[var(--surface)]
                 shadow-xl
 
                 screen-2xl:w-[26rem]
               "
             >
-              <div className="flex shrink-0 items-center justify-between px-4 py-3.5">
+              {/* Header */}
+              <div
+                className="
+                  flex
+                  shrink-0
+                  items-center
+                  justify-between
+                  px-4
+                  py-3.5
+                "
+              >
                 <p className="text-base font-semibold text-[var(--text-heading)]">
-                  Reliability Alerts
+                  Notifications
                 </p>
+
                 <button
                   type="button"
-                  className="text-xs font-medium text-[var(--icon-btn-navy)] hover:underline"
+                  className="
+                    text-xs
+                    font-medium
+                    text-[var(--icon-btn-navy)]
+                    hover:underline
+                  "
                 >
-                  Acknowledge all
+                  Mark all read
                 </button>
               </div>
 
-              <div className="divide-y divide-[var(--divider)] overflow-y-auto border-t border-[var(--divider)] max-h-80">
-                {SRE_NOTIFICATIONS.map((n) => (
+              {/* Notifications */}
+              <div
+                className="
+                  divide-y
+                  divide-[var(--divider)]
+                  overflow-y-auto
+                  border-t
+                  border-[var(--divider)]
+                "
+              >
+                {SRE_NOTIFICATIONS.map((notification) => (
                   <button
-                    key={n.id}
+                    key={notification.id}
                     type="button"
-                    className="tap-pop flex w-full items-start gap-2 px-4 py-3 text-left transition-colors hover:bg-[var(--search-bg)]"
+                    className="
+                      tap-pop
+                      flex
+                      w-full
+                      items-start
+                      gap-2
+                      px-4
+                      py-3.5
+                      text-left
+                      transition-colors
+                      hover:bg-[var(--search-bg)]
+                    "
                   >
                     <span
-                      className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${
-                        n.unread ? "bg-red-600" : "bg-transparent"
-                      }`}
+                      className={`
+                        mt-1.5
+                        h-1.5
+                        w-1.5
+                        shrink-0
+                        rounded-full
+                        ${
+                          notification.unread
+                            ? "bg-[var(--notification-dot)]"
+                            : "bg-transparent"
+                        }
+                      `}
                     />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs font-semibold text-[var(--text-heading)] leading-snug">
-                        {n.title}
-                      </p>
-                      <span className="text-[11px] text-[var(--text-muted)]">
-                        {n.time}
+
+                    <span className="min-w-0 flex-1">
+                      <span
+                        className="
+                          block
+                          truncate
+                          text-sm
+                          font-medium
+                          text-[var(--text-heading)]
+                        "
+                      >
+                        {notification.title}
                       </span>
-                    </div>
+
+                      <span
+                        className="
+                          text-xs
+                          text-[var(--text-muted)]
+                        "
+                      >
+                        {notification.time}
+                      </span>
+                    </span>
                   </button>
                 ))}
               </div>
@@ -222,9 +288,10 @@ export default function Header() {
           bg="transparent"
           onClick={() => toggle("apps")}
         >
-          <AppsGridIcon color="#4A5565" />
+          <AppsGridIcon color="var(--text-secondary)" />
         </IconButton>
 
+        {/* Apps dropdown — anchored to the shared right edge of this row */}
         {openMenu === "apps" && <AppsLauncher onClose={() => setOpenMenu(null)} />}
 
         {/* Profile */}
@@ -257,31 +324,32 @@ export default function Header() {
                 justify-center
                 rounded-full
                 bg-gradient-to-tr
-                from-[#0B1B3B]
-                via-[#1E3A8A]
-                to-[#2563EB]
+                from-[#6366F1]
+                via-[#8B5CF6]
+                to-[#3B82F6]
                 p-[0.1875rem]
               "
             >
-              <span
-                className="
-                  flex
-                  h-full
-                  w-full
-                  items-center
-                  justify-center
-                  rounded-full
-                  bg-[var(--avatar-bg)]
-                  text-sm
-                  font-semibold
-                  text-[var(--avatar-text)]
-                "
-              >
-                {persona.identity.initials}
+            <span
+              className="
+                flex
+                h-full
+                w-full
+                items-center
+                justify-center
+                rounded-full
+                bg-[var(--avatar-bg)]
+                text-sm
+                font-semibold
+                text-[var(--avatar-text)]
+              "
+            >
+              {persona.identity.initials}
               </span>
             </span>
           </button>
 
+          {/* Profile dropdown */}
           {openMenu === "profile" && (
             <div
               className="
@@ -295,40 +363,143 @@ export default function Header() {
                 rounded-xl
                 border
                 border-[var(--divider)]
-                bg-white
+                bg-[var(--surface)]
                 shadow-xl
               "
             >
+              {/* Brand row */}
               <div className="flex items-center justify-between px-4 py-3.5">
                 <p className="text-base font-semibold text-[var(--text-heading)]">
-                  DevOps / SRE Console
+                  Setu
                 </p>
-                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
-                  On-Call Primary
-                </span>
+
+                <button
+                  type="button"
+                  className="text-sm font-medium text-[var(--status-critical-fg)] hover:underline"
+                >
+                  Sign out
+                </button>
               </div>
 
-              <div className="flex items-start gap-3 border-t border-[var(--divider)] px-4 py-4">
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--avatar-bg)] text-base font-semibold text-[var(--avatar-text)]">
+              {/* Account summary */}
+              <div
+                className="
+                  flex
+                  items-start
+                  gap-3
+                  border-t
+                  border-[var(--divider)]
+                  px-4
+                  py-5
+                "
+              >
+                <span
+                  className="
+                    flex
+                    h-14
+                    w-14
+                    shrink-0
+                    items-center
+                    justify-center
+                    rounded-full
+                    bg-[var(--avatar-bg)]
+                    text-lg
+                    font-semibold
+                    text-[var(--avatar-text)]
+                  "
+                >
                   {persona.identity.initials}
                 </span>
 
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-bold text-[var(--text-heading)]">
+                  <p className="truncate text-base font-semibold text-[var(--text-heading)]">
                     {persona.identity.name}
                   </p>
-                  <p className="truncate text-xs text-[var(--text-muted)]">
+
+                  <p className="truncate text-sm text-[var(--text-muted)]">
+                    {persona.identity.name.toLowerCase().replace(" ", ".")}@setu.in
+                  </p>
+
+                  <p className="truncate text-sm text-[var(--role-text)]">
                     {persona.identity.role}
                   </p>
-                  <p className="text-[11px] text-slate-500 mt-0.5">
-                    arjun.mehta@setu.in · Tier-3 Escalation
-                  </p>
+
+                  <button
+                    type="button"
+                    className="
+                      tap-pop
+                      mt-2
+                      flex
+                      items-center
+                      gap-1
+                      text-sm
+                      font-medium
+                      text-[var(--icon-btn-navy)]
+                      hover:underline
+                    "
+                  >
+                    View account
+                    <ExternalLink size={14} />
+                  </button>
                 </div>
               </div>
 
-              <div className="border-t border-[var(--divider)] p-2 bg-slate-50 text-[11px] text-[var(--text-muted)]">
-                <span>Setu Observability &amp; Reliability Layer (V2.1)</span>
+              {/* Theme */}
+              <div className="flex items-center justify-between border-t border-[var(--divider)] px-4 py-3">
+                <span className="text-base text-[var(--text-secondary)]">Theme</span>
+                <ThemeToggle />
               </div>
+
+              {/* Menu items */}
+              <div className="border-t border-[var(--divider)] py-1">
+                <Link
+                  href={`${persona.routeBase}/audit`}
+                  onClick={() => setOpenMenu(null)}
+                  className="
+                    tap-pop
+                    flex
+                    w-full
+                    items-center
+                    justify-between
+                    gap-2
+                    px-4
+                    py-3
+                    text-left
+                    text-base
+                    text-[var(--text-secondary)]
+                    transition-colors
+                    hover:bg-[var(--search-bg)]
+                  "
+                >
+                  <span className="flex items-center gap-2.5">
+                    <History size={18} className="text-[var(--text-muted)]" />
+                    My activity
+                  </span>
+                  <span className="text-sm text-[var(--text-muted)]">Audit trail</span>
+                </Link>
+
+                <button
+                  type="button"
+                  className="
+                    tap-pop
+                    flex
+                    w-full
+                    items-center
+                    gap-2.5
+                    px-4
+                    py-3
+                    text-left
+                    text-base
+                    text-[var(--text-secondary)]
+                    transition-colors
+                    hover:bg-[var(--search-bg)]
+                  "
+                >
+                  <Settings size={18} className="text-[var(--text-muted)]" />
+                  Settings
+                </button>
+              </div>
+
             </div>
           )}
         </div>
@@ -337,55 +508,67 @@ export default function Header() {
   );
 }
 
+/* -------------------------------------------------------------------------- */
+/* Icon Button                                                                 */
+/* -------------------------------------------------------------------------- */
+
 function IconButton({
+  label,
+  bg,
   children,
   onClick,
-  label,
-  bg = "var(--icon-btn-bg)",
 }: {
+  label: string;
+  bg: string;
   children: React.ReactNode;
   onClick?: () => void;
-  label: string;
-  bg?: string;
 }) {
   return (
     <button
       type="button"
-      onClick={onClick}
-      aria-label={label}
       title={label}
-      style={{ backgroundColor: bg }}
-      className="
+      onClick={onClick}
+      style={bg === "transparent" ? undefined : { backgroundColor: bg }}
+      className={`
         tap-pop
         flex
-        h-[2.5rem]
-        w-[2.5rem]
+        h-[2.875rem]
+        w-[2.875rem]
+        shrink-0
         items-center
         justify-center
         rounded-lg
-        border
-        border-[var(--divider)]
-        transition-colors
-        hover:bg-[var(--search-bg)]
-      "
+        transition-all
+        duration-150
+        hover:scale-105
+        ${bg === "transparent" ? "hover:bg-[var(--search-bg)]" : ""}
+      `}
     >
       {children}
     </button>
   );
 }
 
+/* -------------------------------------------------------------------------- */
+/* Apps Grid Icon (Google-style 3x3 dots)                                     */
+/* -------------------------------------------------------------------------- */
+
 function AppsGridIcon({ color }: { color: string }) {
+  const positions = [0, 1, 2];
+
   return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-      <rect x="3" y="3" width="3.5" height="3.5" rx="1" fill={color} />
-      <rect x="8.25" y="3" width="3.5" height="3.5" rx="1" fill={color} />
-      <rect x="13.5" y="3" width="3.5" height="3.5" rx="1" fill={color} />
-      <rect x="3" y="8.25" width="3.5" height="3.5" rx="1" fill={color} />
-      <rect x="8.25" y="8.25" width="3.5" height="3.5" rx="1" fill={color} />
-      <rect x="13.5" y="8.25" width="3.5" height="3.5" rx="1" fill={color} />
-      <rect x="3" y="13.5" width="3.5" height="3.5" rx="1" fill={color} />
-      <rect x="8.25" y="13.5" width="3.5" height="3.5" rx="1" fill={color} />
-      <rect x="13.5" y="13.5" width="3.5" height="3.5" rx="1" fill={color} />
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      {positions.map((row) =>
+        positions.map((col) => (
+          <circle
+            key={`${row}-${col}`}
+            cx={3 + col * 7}
+            cy={3 + row * 7}
+            r="2"
+            fill={color}
+          />
+        ))
+      )}
     </svg>
   );
 }

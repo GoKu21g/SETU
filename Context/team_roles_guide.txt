@@ -3,7 +3,7 @@ Sahayogi Setu V2
 Team roles and screen design guide
 Who builds what, which persona each screen serves, and how every screen should be designed.
 Based on: Sahayogi Setu V2 Detailed Blueprint (21 September 2026), Setu Website Audit: Sidebar Feature Line Inventory (21 September 2026), and the Setu design artifacts (visual blueprint, sidebar explained, app screens canvas).
-Version 1, 22 September 2026. Working draft for team review.
+Version 2, 28 September 2026. Updated and codified against the authoritative SetuV2-Layout reference implementation.
 1. How to use this document
 Every screen in Setu V2 exists because one of the 12 blueprint personas needs it. This guide gives each of the 7 team members a persona cluster, the screens they own, the live pages they must migrate or fix, and a design brief for each screen.
 Read it in this order:
@@ -22,98 +22,186 @@ Setu shows, it does not copy. CRM, invoices, tickets and HR stay in BoSS; logins
 Mask personal data by default. Email, phone, PAN and GSTIN are masked unless the role has unmask permission; unmasking is audited.
 Explicit states. Every record shows its state from the agreed state machine (§29), never a vague label.
 No placeholders in production. No "Coming soon" banners, no pages without data sources in the navigation.
-2.2 Page layout
+2.2 Page layout & Shell Architecture (Codified in SetuV2-Layout)
 Area
 Specification
-Canvas size
-Desktop 1440 x 900 for design artboards. Layout must also work at 1280 wide.
-Sidebar
-248 px wide, navy background, grouped sections, count badges for queues. Shared component owned by Member 1.
-Top bar
-64 px high: global search, quick add, help and runbooks, Production label, on-call person, notifications, account. Shared component.
-Page shell (list pages)
-Title and one-line purpose, then stat tiles, then filters and search, then table, then a detail panel on the right (about 400 px) when a row is selected.
-Page shell (360 pages)
-Breadcrumb, object header (name, ID, status, key facts, primary actions), tab bar, then a 3-column card grid on the Overview tab.
-Spacing
-Page padding 22 to 28 px; gaps 12 to 16 px; card radius 14 px; table row height about 44 px.
+App Shell Container (AppShell.tsx)
+Full viewport dynamic container: h-dvh, overflow-hidden, bg-[var(--shell-bg)]. Features a pixel-perfect right-edge alignment strip (2.1rem desktop, 2.5rem 2xl) matching Header action buttons, dashboard main padding, and background edge filler for flawless vertical alignment at any zoom level. Non-destructive state preservation: when the AI Assistant opens or expands, the main dashboard column smoothly shrinks flex-grow from 1 to 0 with transition-[flex-grow,opacity] duration-300 ease-out, preserving user form drafts, scroll position, and tab state without unmounting.
+Responsive Navigation (Sidebar.tsx)
+Desktop (screen-sm and above / >= 36rem): Slim vertical icon-rail (width 5.75rem / 92px). Includes top logo linking to persona dashboard, switching automatically between /logo.svg and /logo-dark.svg. Features persona-specific icon buttons (44x44px rounded-lg with group-hover:scale-105 and hover:bg-[var(--search-bg)]), a dynamic sliding left indicator pill (width 4px, rounded-full, animated via transition-all duration-300 ease-out matching offsetTop and offsetHeight of the active route), and 12px micro-labels.
+Mobile / Small Viewports (< screen-sm / < 36rem): Automatically reflows into a fixed bottom navigation bar (h-16 / 4rem, fixed inset-x-0 bottom-0 z-40, bg-[var(--shell-bg)]) with horizontal touch distribution. The brand logo seamlessly migrates into the Header on mobile (screen-sm:hidden).
+Universal Top Header (Header.tsx)
+Fixed height 4.5rem (72px) with clean bottom divider line. Includes mobile brand logo, fluid centered search bar (flex-1 max-w-[30rem] with min-w-0 to prevent horizontal overflow on foldable/small screens), search icon, placeholder, and keyboard shortcut hint. Action cluster on right: Quick Create button (+), Notifications bell with unread indicator dot and interactive popover list with relative timestamps, ThemeToggle (Light/Dark/System), AppsLauncher 9-dot grid button, and Persona / Workspace Profile pill with initials avatar, user name, role subtitle, and switcher dropdown.
+Sahayogi AI Assistant (AssistantRegion.tsx)
+Tri-mode operational architecture:
+1. Closed: Collapsed with floating gradient AssistantButton in bottom-right corner.
+2. Compact: Docked right-hand panel (clamp(20rem, 28vw, 26rem)) with collapsible conversation history sidebar, markdown chat stream, prompt input, and action triggers while dashboard remains interactive.
+3. Fullscreen: Full workspace takeover (flexGrow: 1) with dual-column layout (conversation history sidebar + full-width dialogue panel). Rich interactive features include animated LoadingDots, suggestion prompt pills, regeneration, and auto-scroll.
+Apps Launcher (AppsLauncher.tsx)
+Modal popover with backdrop blur, Pinned Favorites grid, All Applications grid, and in-launcher search. Features interactive Edit Mode (pencil icon): activates tactile jiggle animations (@keyframes app-wiggle / launcher-jiggle) and drag-and-drop reordering between zones. Includes star pinning, sort toggle (Alphabetical vs Recently Used), and direct launch URLs tracking last-used timestamps.
+Fluid Breakpoints & Typography
+Fluid root font sizing: html { font-size: clamp(13px, min(calc(9.5px + 0.4vw), calc(5px + 1.2vh)), 17px); }. All spacing, typography, and card paddings ride continuously on rem units, automatically reflowing on window resizing and browser zooming without awkward jump thresholds.
+Standardized rem media query breakpoints:
+- screen-420: min-width: 26.25rem (420px) — Compact mobile
+- screen-sm: min-width: 36rem (576px) — Small tablet / navigation mode switch
+- screen-lg: min-width: 56rem (896px) — Standard tablet / side-by-side transition
+- screen-xl: min-width: 72rem (1152px) — Standard desktop
+- screen-1366: min-width: 85.375rem (1366px) — Laptop viewport
+- screen-1440: min-width: 90rem (1440px) — Primary design desktop canvas
+- screen-2xl: min-width: 96rem (1536px) — High-resolution display
+Spacing & Metrics Tokens
+--card-pad: clamp(0.625rem, 0.4rem + 0.9vw, 1.25rem);
+--space-md: clamp(0.75rem, 0.5rem + 0.85vw, 1.25rem);
+--card-radius: 0.75rem (12px);
+--card-shadow: 0 0 0.3rem rgba(0, 0, 0, 0.1) (Dark: 0 0 0.3rem rgba(0, 0, 0, 0.4));
+--card-shadow-hover: 0 0.5rem 1.5rem rgba(15, 23, 42, 0.1) (Dark: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.55));
+--page-pad-x: 0.75rem; --page-pad-y: 0.5rem.
 
-2.3 Colour and type
+2.3 Colour and type & Semantic Token System
 Token
-Value
+Light Mode Value
+Dark Mode Value
 Use
-Ink
-#141A33
-Main text
-Muted
-#4A5170
-Secondary text, labels
-Background
-#F5F6FA
-Page background
-Surface
+--shell-bg / --page-bg
 #FFFFFF
-Cards, tables, panels
-Line
-#DDE1EC
-Borders and dividers
-Sidebar
-#1B2250
-Navigation background
-Primary
-#3346C4
-Primary buttons, links, selected rows
-Healthy / success
-#17603A on #E3F4EA
-Healthy, active, passed
-Warning
-#7A4B00 on #FDF3DC
-Grace, slow, needs attention
-Critical / failed
-#9B1C1C on #FDECEA
-Failed, degraded, overdue, critical
-Info / approval
-#2A36A0 on #E8EBFB
-Approvals, trial, informational
-Governance
-#4F2C94 on #EFE8FB
-Security and compliance items
+#0B0F14
+Shell backdrop and main workspace page background
+--surface
+#FFFFFF
+#141A22
+Cards, tables, modals, inspector panels
+--surface-muted
+#F3F4F6
+#1C232E
+Muted surface badges, empty states
+--text-heading
+#0F172A
+#F1F3F5
+Primary titles, numbers, card headings
+--text-muted
+#64748B
+#8B93A1
+Secondary descriptions, table headers, captions
+--text-secondary
+#383838
+#C7CCD3
+Labels, input text, body text
+--divider
+#E5E7EB
+#232B36
+Borders, card dividers, table separators
+--search-bg
+#F3F4F6
+#1C232E
+Search input background, pill containers
+--icon-btn-navy
+#0B1B3B
+#8FB4FF
+Primary navy accent, icon highlights, active theme pill
+--accent-solid
+#0B1B3B
+#2E4E86
+Solid accent background for buttons and active items
+--sidebar-active
+#0B1B3B
+#8FB4FF
+Active navigation indicator pill and active nav label
+--notification-dot
+#8FB4FF
+#8FB4FF
+Unread notification dot
+Status Healthy
+fg: #17603A, bg: #E3F4EA
+fg: #4ADE80, bg: #14301F
+Healthy, active, verified, passed
+Status Warning
+fg: #7A4B00, bg: #FDF3DC
+fg: #FBBF24, bg: #3A2A0A
+Warning, grace period, retry, degraded
+Status Critical
+fg: #9B1C1C, bg: #FDECEA
+fg: #F87171, bg: #3A1414
+Critical, failed, incident, server error
+Status Info
+fg: #2A36A0, bg: #E8EBFB
+fg: #93A9FF, bg: #1E2A55
+Informational, approvals, pending review
+Status Neutral
+fg: #4B5563, bg: #F3F4F6
+fg: #A7B0BD, bg: #1C232E
+Offline, draft, neutral state
+KPI Display Numbers
+good: #15A34A, warn: #D97706, bad: #DC2626
+good: #4ADE80, warn: #FBBF24, bad: #FB7185
+High-contrast numbers on KPI cards
+Charts Palette
+#2563EB, #059669, #D97706, #DC2626, #7C3AED, #0891B2
+#60A5FA, #34D399, #FBBF24, #F87171, #A78BFA, #22D3EE
+Chart data series for trends, donuts, and bars
+--logo-chip-bg
+transparent
+#FFFFFF
+Dark mode backdrop for flattened PNG product logos
 
-Fonts: Figtree for all interface text (headings 26 px bold, section titles 16 to 17 px bold, body 14 px, captions 12 to 13 px). IBM Plex Mono only for IDs: workspace IDs, correlation IDs, audit IDs, codes.
-Never use colour alone to show state; every status pill also carries a word (Healthy, Failed, Grace).
-2.4 Shared components
+Fonts: Inter (--font-sans) for all user interface typography; IBM Plex Mono (.font-mono-id) strictly for IDs (workspace IDs, correlation IDs, trace IDs, audit records, error codes).
+Micro-Interactions:
+- .tap-pop:active: scale(0.97) spring effect on button presses.
+- .card-interactive:hover: translateY(-2px) elevation with smooth shadow transition.
+- .page-transition: translateY(6px) to 0 opacity fade-in.
+- launcher-jiggle / app-wiggle: rotate(-1.5deg) to rotate(1.5deg) tactile vibration during launcher edit mode.
+- Global reduced motion handling: @media (prefers-reduced-motion: no-preference) transitions background, border, and color smoothly.
+- Hidden scrollbars across browsers: * { scrollbar-width: none; -ms-overflow-style: none; } and *::-webkit-scrollbar { display: none; }.
+
+2.4 Shared components catalogue
 Component
 How it works
-Status pill
-Rounded label, 12 px bold, colour from the table above plus a word. One pill per state; states come from §29.
-Stat tile
-Label, large number, one coloured note line. Always a link to the filtered list behind it.
-Data table
-Grey header row, 44 px rows, selected row tinted with a 3 px primary bar on the left. Columns sortable; filters above.
-Detail panel
-Right side, 380 to 400 px. Title, status, key facts as a label/value list, suggested next step box, action buttons at the bottom.
+AppShell
+Dynamic viewport shell (h-dvh) managing sidebar rail, header, main content column, and assistant docking with non-destructive state preservation.
+Sidebar
+Slim 5.75rem vertical icon-rail on desktop with dynamic sliding indicator pill (w-1 rounded-full) that smoothly glides to the active route; automatically converts to fixed bottom navigation bar on mobile (< screen-sm).
+Header
+Universal 4.5rem top bar with fluid search, mobile logo fallback, Quick Create (+), Notifications dropdown with unread indicators, ThemeToggle (Light/Dark/System), AppsLauncher button, and Profile switcher.
+ThemeToggle & ThemeProvider
+Tri-mode switcher (light/dark/system) persisting to localStorage under 'theme-mode' with live OS preference sync and class-based dark variant (@custom-variant dark).
+AppsLauncher
+Interactive modal popover with Favorites grid, All Apps grid, in-launcher search, and an Edit Mode (pencil icon) activating tactile jiggle animations and drag-and-drop reordering between zones.
+AssistantRegion & AIConversationPanel
+Docked compact panel (clamp(20rem, 28vw, 26rem)) or fullscreen workspace takeover with collapsible chat history, markdown streaming, prompt suggestions, and floating AssistantButton.
+FilterDropdown
+Custom accessible dropdown popover replacing native OS selects. Features rounded pill trigger with active filter indicator (border-blue-300 bg-blue-50/50), quick-clear (X) button, rotating chevron, in-menu live search, and checkmarks.
+KPITile
+Executive metric card with title, large value, status badge, trend chip, and interactive 60-second auto-refresh with simulated failure to exercise the StaleIndicator.
+StaleIndicator
+Subtle warning badge informing operators when live telemetry data failed to refresh, preserving the last known cached value.
+StatusBadge
+Semantic status pill carrying both color and explicit textual state (Healthy, Failed, Grace, Warning, Neutral).
+DataTable
+Sortable, paginated enterprise data table with grey header row, 44px rows, and tinted active selection indicator.
+TabBar
+Underline or pill-styled navigation bar synchronized with URL query parameters (?tab=) for bookmarkable state.
+Card
+Primary container surface with border-slate-200/90, card-radius (0.75rem), subtle card shadow, and interactive hover elevation.
+DrillLink
+Context-preserving deep link that carries filter and object state across workspace views.
 Reason dialog
-Opens for every privileged action: reason (required), reference (case, deal, incident), preview of the change, approver if needed. Confirm writes the audit record.
+Mandatory modal for privileged operations requiring reason, incident/case reference, diff preview, and approval workflow.
 Before/after diff
-Red line for old value, green line for new value, monospaced. Used in audit, repair and overrides.
-Timeline
-Time, coloured dot, one-line event; newest first on 360 pages.
-Tabs
-Underline style; selected tab bold with a 3 px primary underline.
-Buttons
-Primary (filled indigo), secondary (white with border), destructive (filled red, always behind a reason dialog). Minimum height 40 px, 44 px for main actions.
+Red/green monospaced comparison component displaying exact before-and-after operational mutation state.
 
 2.5 States every screen must design
 Loaded with realistic sample data.
-Empty: what it means and the next step, for example "No incidents in the last 30 days".
-Loading: skeleton rows, never a blank page.
-Error: what failed and a retry, with the correlation ID for support.
+Empty: what it means and the next step, for example "No incidents in the last 30 days" (EmptyState component).
+Loading: skeleton rows, animated pulse cards, never a blank page.
+Error: what failed and a retry button, with the correlation ID for support.
+Stale: last cached value shown with StaleIndicator warning when background polling fails.
 No permission: the page explains which role is needed; never a silent blank.
-Masked data: how masked fields look and how an allowed user unmasks them.
-2.6 Accessibility
-Real buttons, links, inputs and labels; icon-only buttons have an accessible name.
-Text contrast at least 4.5 to 1; touch and click targets at least 44 px for main actions.
-Full keyboard navigation, including Ctrl K for global search (§27).
+Masked data: personal data (phone, PAN, GSTIN, secrets) masked with an audited unmask action.
+
+2.6 Accessibility & Fluid Scaling
+Real semantic HTML elements (buttons, links, inputs, labels); icon-only buttons always carry aria-label and title.
+Text contrast at least 4.5 to 1 in both light and dark modes.
+Fluid rem scaling ensures that all elements, padding, and text scale continuously when users zoom in/out or resize windows.
+Full keyboard navigation, including Escape key to dismiss modals/popovers and Ctrl/Cmd+K for search.
 3. Final navigation and role landing pages
 3.1 Sidebar structure
 The sidebar follows the blueprint's recommended Hybrid model (§22): core objects plus work queues. Each item lists the screen number from Section 5.

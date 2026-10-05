@@ -47,7 +47,7 @@ export default function RiskHeatMap({ risks }: { risks: RiskPoint[] }) {
                   >
                     {cellRisks.length > 0 && (
                       <span
-                        className="flex h-[1.25rem] w-[1.25rem] items-center justify-center rounded-full bg-white text-[0.625rem] font-bold shadow-sm"
+                        className="flex h-[1.25rem] w-[1.25rem] items-center justify-center rounded-full bg-[var(--surface)] text-[0.625rem] font-bold shadow-sm"
                         style={{ color: band.fg }}
                       >
                         {cellRisks.length}

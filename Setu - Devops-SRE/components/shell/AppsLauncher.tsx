@@ -24,11 +24,10 @@ function AppIcon({ app, size }: { app: LauncherApp; size: number }) {
   const [errored, setErrored] = useState(false);
 
   if (app.logoUrl && !errored) {
-    // Square rounded container — bg-white matches the logo's own white background seamlessly
     return (
       <span
-        className="pointer-events-none flex shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white ring-1 ring-[var(--divider)]"
-        style={{ width: size, height: size }}
+        className="pointer-events-none block shrink-0 rounded-md"
+        style={{ width: size, height: size, backgroundColor: "var(--logo-chip-bg, transparent)" }}
       >
         <img
           src={app.logoUrl}
@@ -201,7 +200,7 @@ export default function AppsLauncher({ onClose }: { onClose: () => void }) {
         absolute right-0 top-[calc(100%+var(--page-pad-y))] z-50
         flex max-h-[42rem] w-[28rem] max-w-[calc(100vw-1.5rem)]
         flex-col overflow-hidden rounded-xl border border-[var(--divider)]
-        bg-white shadow-xl
+        bg-[var(--surface)] shadow-xl
       "
     >
       <div className="flex shrink-0 items-center justify-between px-4 pt-4">
@@ -212,7 +211,7 @@ export default function AppsLauncher({ onClose }: { onClose: () => void }) {
           onClick={() => setEditMode((v) => !v)}
           className={`tap-pop flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
             editMode
-              ? "bg-[var(--icon-btn-navy)] text-white"
+              ? "bg-[var(--accent-solid)] text-white"
               : "text-[var(--text-muted)] hover:bg-[var(--search-bg)]"
           }`}
         >
@@ -227,29 +226,29 @@ export default function AppsLauncher({ onClose }: { onClose: () => void }) {
         onPointerCancel={dragId ? handlePointerUp : undefined}
       >
         {favoriteApps.length > 0 && (
-              <div className="mb-2 rounded-2xl bg-[var(--search-bg)] p-3">
-                <p className="px-1 pb-2 pt-1 text-[0.6875rem] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
-                  Your favorites
-                </p>
-                <div
-                  ref={favoritesGridRef}
-                  data-zone="favorites"
-                  className={`grid grid-cols-3 gap-1 rounded-lg pb-1 transition-colors ${
-                    dragOver?.zone === "favorites" ? "bg-white ring-2 ring-[var(--icon-btn-navy)]/30" : ""
-                  }`}
+          <div className="mb-2 rounded-2xl bg-[var(--search-bg)] p-3">
+            <p className="px-1 pb-2 pt-1 text-[0.6875rem] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+              Your favorites
+            </p>
+            <div
+              ref={favoritesGridRef}
+              data-zone="favorites"
+              className={`grid grid-cols-3 gap-1 rounded-lg pb-1 transition-colors ${
+                dragOver?.zone === "favorites" ? "bg-[var(--search-bg)]/40 ring-2 ring-[var(--icon-btn-navy)]/30" : ""
+              }`}
+            >
+              {favoriteApps.map((app, index) => (
+                <button
+                  key={app.id}
+                  ref={(el) => registerTile(app.id, el)}
+                  type="button"
+                  onClick={() => handleTileClick(app)}
+                  onPointerDown={(e) => handlePointerDown(e, app)}
+                  style={{ touchAction: dragEnabled ? "none" : undefined, ...jiggleStyle(index) }}
+                  className={`tap-pop flex flex-col items-center gap-2 rounded-lg px-2 py-3 text-center transition-colors hover:bg-[var(--search-bg)] ${
+                    dragEnabled && dragId !== app.id ? "launcher-jiggle" : ""
+                  } ${dragId === app.id ? "opacity-30" : ""}`}
                 >
-                  {favoriteApps.map((app, index) => (
-                    <button
-                      key={app.id}
-                      ref={(el) => registerTile(app.id, el)}
-                      type="button"
-                      onClick={() => handleTileClick(app)}
-                      onPointerDown={(e) => handlePointerDown(e, app)}
-                      style={{ touchAction: dragEnabled ? "none" : undefined, ...jiggleStyle(index) }}
-                      className={`tap-pop flex flex-col items-center gap-2 rounded-lg px-2 py-3 text-center transition-colors hover:bg-white ${
-                        dragEnabled && dragId !== app.id ? "launcher-jiggle" : ""
-                      } ${dragId === app.id ? "opacity-30" : ""}`}
-                    >
                       <span className="relative">
                         <AppIcon app={app} size={58} />
                         {editMode && (

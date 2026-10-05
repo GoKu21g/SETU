@@ -20,6 +20,7 @@ import {
   HeartPulse,
   AlertTriangle,
   Network,
+  Ticket,
 } from "lucide-react";
 import { personaConfigFromPathname, type Persona } from "@/lib/personas";
 
@@ -33,14 +34,21 @@ type NavItem = {
 
 const TECHNICAL_SUPPORT_NAV_ITEMS: NavItem[] = [
   {
-    label: "API & Logs",
+    label: "Logs",
     slug: "api-logs",
     bg: "#DBEAFE",
     fg: "#2563EB",
     icon: (color) => <Terminal color={color} size={20} />,
   },
   {
-    label: "Workspace 360",
+    label: "Tickets",
+    slug: "tickets",
+    bg: "#FEF3C7",
+    fg: "#D97706",
+    icon: (color) => <Ticket color={color} size={20} />,
+  },
+  {
+    label: "Workspaces",
     slug: "workspaces",
     bg: "#EDE9FE",
     fg: "#7C3AED",
@@ -167,8 +175,8 @@ const NAV_ITEMS_BY_PERSONA: Record<Persona, NavItem[]> = {
   "compliance-officer": COMPLIANCE_OFFICER_NAV_ITEMS,
 };
 
-const INDICATOR_COLOR = "#0B1B3B";
-const INACTIVE_ICON_COLOR = "#475569";
+const INDICATOR_COLOR = "var(--sidebar-active)";
+const INACTIVE_ICON_COLOR = "var(--text-muted)";
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -227,21 +235,15 @@ export default function Sidebar() {
       <Link
         href={`${persona.routeBase}/dashboard`}
         aria-label="Go to dashboard"
-        title="Setu Dashboard"
         className="
-          flex
+          hidden
+          w-full
           shrink-0
           items-center
           justify-center
-          h-[3.25rem]
-          w-[3.25rem]
-          tap-pop
-          transition-transform
-          duration-150
-          hover:scale-105
 
+          screen-sm:flex
           screen-sm:h-[var(--header-h)]
-          screen-sm:w-full
         "
       >
         <Image
@@ -249,7 +251,15 @@ export default function Sidebar() {
           alt="Setu"
           width={63}
           height={77}
-          className="h-[2.5rem] w-[2rem]"
+          className="h-[2.5rem] w-[2rem] dark:hidden"
+          priority
+        />
+        <Image
+          src="/logo-dark.svg"
+          alt="Setu"
+          width={63}
+          height={77}
+          className="hidden h-[2.5rem] w-[2rem] dark:block"
           priority
         />
       </Link>
@@ -330,7 +340,7 @@ export default function Sidebar() {
 
                   screen-sm:block
 
-                  ${isActive ? "font-semibold text-[#0B1B3B]" : "text-slate-600"}
+                  ${isActive ? "font-semibold text-[var(--sidebar-active)]" : "text-[var(--text-muted)]"}
                 `}
               >
                 {item.label}

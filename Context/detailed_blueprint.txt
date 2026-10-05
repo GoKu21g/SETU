@@ -939,6 +939,64 @@ Reconciliation workers.
 Fine-grained authorisation/policy enforcement.
 28.1 Canonical correlation
 Mandatory foundation — A single business journey must be reconstructable across Account → Workspace → CRM context → Subscription → Provisioning → Product Resources → Events → Operations → Incidents. Stable IDs and correlation IDs should be designed before large-scale implementation.
+
+28.2 Authoritative UI & App Shell Architecture (Codified in SetuV2-Layout)
+The frontend client architecture is fully implemented and established in the SetuV2-Layout codebase, serving as the official reference implementation for all Setu workspaces:
+1. Core Stack & Framework: Next.js (App Router) + React 19 + Tailwind CSS v4. No heavy third-party UI component libraries; every component is engineered with hand-crafted utility classes, CSS variables, and native accessibility.
+2. Fluid Typography & Viewport Scaling:
+   - Fluid root sizing: html { font-size: clamp(13px, min(calc(9.5px + 0.4vw), calc(5px + 1.2vh)), 17px); }
+   - All spacing, typography, and card paddings ride continuously on rem units, automatically reflowing on window resizing and browser zooming without awkward jump thresholds.
+   - Standardized rem media query breakpoints:
+     * screen-420: min-width: 26.25rem (420px) — Compact mobile
+     * screen-sm: min-width: 36rem (576px) — Small tablet / navigation mode switch
+     * screen-lg: min-width: 56rem (896px) — Standard tablet / side-by-side transition
+     * screen-xl: min-width: 72rem (1152px) — Standard desktop
+     * screen-1366: min-width: 85.375rem (1366px) — Laptop viewport
+     * screen-1440: min-width: 90rem (1440px) — Primary design desktop canvas
+     * screen-2xl: min-width: 96rem (1536px) — High-resolution display
+3. App Shell Structure (AppShell.tsx):
+   - Full viewport dynamic container: h-dvh, overflow-hidden, bg-[var(--shell-bg)].
+   - Right-edge alignment strip: 2.1rem (desktop) to 2.5rem (2xl) right gutter matching Header action buttons, dashboard main padding, and background edge filler for pixel-perfect vertical alignment at any zoom level.
+   - Non-destructive state preservation: When the AI Assistant expands to fullscreen, the main dashboard column smoothly shrinks flex-grow from 1 to 0 with transition-[flex-grow,opacity] duration-300 ease-out, preserving user form drafts, scroll position, and tab state.
+4. Dual-Mode Responsive Navigation (Sidebar.tsx):
+   - Desktop Mode (screen-sm and above): Vertical slim icon-rail (width 5.75rem / 92px). Includes top logo linking to persona dashboard, persona-specific icon buttons (44x44px rounded-lg with group-hover:scale-105 and hover:bg-[var(--search-bg)]), a dynamic sliding left indicator pill (width 4px, rounded-full, animated via transition-all duration-300 ease-out matching offsetTop and offsetHeight of the active route), and 12px micro-labels.
+   - Mobile Mode (< screen-sm): Automatically reflows into a fixed bottom navigation bar (h-16 / 4rem, fixed inset-x-0 bottom-0 z-40, bg-[var(--shell-bg)]) with horizontal touch distribution.
+   - Persona-Scoped Nav Rails: Supports Founder, Engineering Lead, Compliance Officer, Technical Support Agent, and DevOps/SRE Specialist with role-filtered primary routes.
+5. Universal Top Header (Header.tsx):
+   - Fixed height 4.5rem (72px) with clean bottom divider line.
+   - Adaptive mobile brand logo (renders only when desktop sidebar logo is hidden).
+   - Fluid centered search bar (flex-1 max-w-[30rem] with min-w-0 to prevent horizontal overflow on foldable/small screens), placeholder, and keyboard shortcut hint.
+   - Action cluster on right:
+     * Quick Create button (+)
+     * Notifications bell with unread indicator dot and interactive popover list with relative timestamps
+     * ThemeToggle: pill component supporting Light, Dark, and System theme modes
+     * AppsLauncher button: 9-dot grid button opening the ecosystem applications launcher
+     * Persona / Workspace Profile pill: initials avatar, user name, role subtitle, and switcher dropdown
+6. Dark Mode & Semantic Token System (globals.css, ThemeProvider.tsx):
+   - Class-based theme engine (@custom-variant dark (&:where(.dark, .dark *))) managed via ThemeProvider with localStorage persistence under 'theme-mode' and OS matchMedia sync.
+   - Dual-palette semantic tokens:
+     * Inks: --text-heading (#0F172A / #F1F3F5), --text-muted (#64748B / #8B93A1), --text-secondary (#383838 / #C7CCD3).
+     * Surfaces: --shell-bg, --page-bg, --surface, --surface-muted, --divider, --search-bg.
+     * Accent & Actions: --icon-btn-navy (#0B1B3B / #8FB4FF), --accent-solid (#0B1B3B / #2E4E86), --sidebar-active (#0B1B3B / #8FB4FF).
+     * Status badges: Healthy (green), Warning (amber), Critical (rose), Info (blue), Neutral (slate) with paired foreground and background variables for both light and dark.
+     * KPI display numbers: --kpi-good (#15A34A / #4ADE80), --kpi-warn (#D97706 / #FBBF24), --kpi-bad (#DC2626 / #FB7185).
+     * Charts: --chart-1 through --chart-6 tailored for contrast in both modes.
+     * Logo chip background: --logo-chip-bg (#FFFFFF in dark mode) ensuring flattened PNG product logos with mix-blend-mode: multiply remain visible on dark surfaces.
+7. Sahayogi AI Assistant Integration (AssistantRegion.tsx):
+   - Tri-mode operational architecture:
+     * closed: Collapsed with floating gradient AssistantButton in bottom-right corner.
+     * compact: Docked right-hand panel (clamp(20rem, 28vw, 26rem)) with collapsible conversation history sidebar, markdown chat stream, prompt input, and action triggers while dashboard remains interactive.
+     * fullscreen: Full workspace takeover (flexGrow: 1) with dual-column layout (conversation history sidebar + full-width dialogue panel).
+   - Rich interactive features: animated LoadingDots, suggestion prompt pills, regeneration, and auto-scroll.
+8. Interactive Ecosystem Apps Launcher (AppsLauncher.tsx):
+   - Modal popover with backdrop blur, Pinned Favorites grid, All Applications grid, and in-launcher search.
+   - Interactive Edit Mode (pencil icon): activates tactile jiggle animations (@keyframes app-wiggle / launcher-jiggle) and drag-and-drop reordering between zones.
+   - Star pinning, sort toggle (Alphabetical vs Recently Used), and direct launch URLs tracking last-used timestamps.
+9. Enterprise Micro-Interactions:
+   - .tap-pop:active (subtle scale-down to 0.97 for tactile button presses).
+   - .card-interactive:hover (translateY(-2px) elevation with smooth shadow transition).
+   - .page-transition (smooth translateY(6px) to 0 opacity reveal).
+   - Hidden cross-browser scrollbars (* { scrollbar-width: none; -webkit-scrollbar: none }).
 29. State Machines to Define Before Development
 Domain
 States to formalise
@@ -994,7 +1052,7 @@ Option C / note
 Setu navigation
 Functional modules
 Persona workbenches
-Hybrid object + workbench model.
+[RESOLVED & LOCKED in SetuV2-Layout]: Persona-scoped responsive Icon-Rail (desktop) / Bottom Bar (mobile) with Universal Top Header Workspace/Persona Switcher.
 Entitlement service
 Central service immediately
 Central policy with product-side cache
@@ -1134,8 +1192,8 @@ Detailed database/schema design.
 API specifications and event payload schemas.
 Exact RBAC permission catalogue.
 Exact compliance mappings to individual ISO/GDPR/DPDPA provisions.
-Screen-by-screen UI wireframes.
-Final left-navigation labels.
+Screen-by-screen UI wireframes. [RESOLVED & IMPLEMENTED: Shell wireframes, components, tokens, dark mode, and assistant codified in SetuV2-Layout]
+Final left-navigation labels. [RESOLVED & IMPLEMENTED: Finalized persona icon-rail and bottom-bar navigation in SetuV2-Layout]
 Technology/vendor selection for workflow/rules/observability engines.
 Detailed SLO/SLA targets.
 Data retention durations and legal policy values.
